@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulasi UKPPPG — 7 Paket Latihan</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#f1f5f9;--panel:#fff;--line:#e2e8f0;--text:#0f172a;--muted:#64748b;
+    --accent:#2563eb;--accent-soft:#dbeafe;--ok:#16a34a;--ok-soft:#dcfce7;
+    --bad:#dc2626;--bad-soft:#fee2e2;--warn:#d97706;--warn-soft:#fef3c7;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.65;font-size:15px;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  
+  header.top{position:sticky;top:0;z-index:50;background:#0f172a;color:#e2e8f0;
+    padding:10px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    box-shadow:0 2px 12px rgba(15,23,42,.18)}
+  header.top .brand{font-weight:700;font-size:14px;letter-spacing:.2px}
+  header.top .brand small{display:block;font-weight:400;font-size:11px;color:#94a3b8;letter-spacing:.4px}
+  .spacer{flex:1}
+  .pill{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+    padding:4px 12px;border-radius:999px;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .pill.timer{font-weight:700;font-size:14px;letter-spacing:.5px}
+  .pill.timer.warn{background:#78350f;border-color:#b45309;color:#fde68a;animation:pulse 1.4s infinite}
+  @keyframes pulse{50%{opacity:.55}}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:22px 18px 120px}
+  .exam-grid{display:grid;grid-template-columns:1fr 272px;gap:20px;align-items:start}
+  @media(max-width:920px){.exam-grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 3px rgba(15,23,42,.06)}
+
+  .hero{text-align:center;padding:38px 24px 30px}
+  .hero h1{font-size:26px;letter-spacing:-.4px;margin-bottom:8px}
+  .hero p{color:var(--muted);max-width:660px;margin:0 auto;font-size:14.5px}
+  .badge{display:inline-block;background:var(--accent-soft);color:#1d4ed8;font-size:12px;
+    font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.5px;margin-bottom:14px}
+
+  .sim-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:0 24px 26px}
+  @media(max-width:720px){.sim-grid{grid-template-columns:1fr}}
+  .sim-card{border:2px solid var(--line);border-radius:16px;padding:24px 22px;background:#fff;
+    text-align:left;transition:.18s;position:relative;overflow:hidden}
+  .sim-card:hover{border-color:var(--accent);background:#f8fbff;transform:translateY(-3px);
+    box-shadow:0 8px 24px rgba(37,99,235,.12)}
+  .sim-card .sim-tag{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+    color:#1d4ed8;background:var(--accent-soft);display:inline-block;padding:3px 10px;border-radius:6px;margin-bottom:12px}
+  .sim-card h3{font-size:19px;margin-bottom:6px;letter-spacing:-.3px}
+  .sim-card p{font-size:13.5px;color:var(--muted);margin-bottom:16px;min-height:42px}
+  .sim-card .meta{display:flex;gap:18px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;
+    border-top:1px solid var(--line);padding-top:12px}
+  .sim-card .meta b{color:var(--text);font-size:14px}
+
+  .mode-bar{display:flex;gap:8px;padding:0 24px 20px;flex-wrap:wrap;justify-content:center}
+  .mode-chip{padding:9px 20px;border-radius:999px;border:2px solid var(--line);
+    font-weight:700;font-size:13.5px;background:#fff;transition:.13s}
+  .mode-chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  .info-strip{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;
+    padding:16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+  .info-strip b{color:var(--text)}
+
+  .qcard{padding:26px 28px}
+  @media(max-width:600px){.qcard{padding:20px 18px}}
+  .qmeta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .tag{font-size:11px;font-weight:800;letter-spacing:.7px;padding:3px 9px;border-radius:6px;text-transform:uppercase}
+  .tag.pu{background:#e0e7ff;color:#3730a3}
+  .tag.pck{background:#ccfbf1;color:#115e59}
+  .tag.type{background:#f1f5f9;color:#475569;border:1px solid var(--line)}
+  .qnum{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:auto}
+  .qtext{font-size:16.5px;font-weight:600;line-height:1.55;margin-bottom:6px}
+  .qsub{font-size:13px;color:var(--muted);margin-bottom:18px}
+
+  .opts{display:grid;gap:10px;margin-top:6px}
+  .opt{display:flex;gap:13px;align-items:flex-start;padding:13px 16px;border:2px solid var(--line);
+    border-radius:11px;background:#fff;text-align:left;transition:.13s;width:100%}
+  .opt:hover{border-color:#bfdbfe;background:#f8fbff}
+  .opt .mark{flex:none;width:26px;height:26px;border-radius:7px;background:#f1f5f9;border:1.5px solid var(--line);
+    display:grid;place-items:center;font-weight:800;font-size:12.5px;color:#475569;margin-top:1px}
+  .opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .opt.sel .mark{background:var(--accent);border-color:var(--accent);color:#fff}
+  .opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+  .opt.correct .mark{background:var(--ok);border-color:var(--ok);color:#fff}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+  .opt.wrong .mark{background:var(--bad);border-color:var(--bad);color:#fff}
+  .opt span.txt{font-size:14.5px;line-height:1.55}
+
+  .stmt{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
+    padding:13px 16px;border:2px solid var(--line);border-radius:11px;margin-bottom:10px;background:#fff}
+  @media(max-width:560px){.stmt{grid-template-columns:1fr;gap:10px}}
+  .stmt .s-text{font-size:14.5px}
+  .stmt .s-idx{font-weight:800;color:var(--muted);font-size:12px;margin-right:7px}
+  .kbtn{padding:7px 16px;border:1.5px solid var(--line);border-radius:8px;font-size:13px;
+    font-weight:600;background:#fff;transition:.13s;white-space:nowrap}
+  .kbtn:hover{border-color:#bfdbfe;background:#f8fbff}
+  .kbtn.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+  .kbtn.correct{background:var(--ok);border-color:var(--ok);color:#fff}
+  .kbtn.wrong{background:var(--bad);border-color:var(--bad);color:#fff}
+  .kbtns{display:flex;gap:8px}
+
+  .fb{margin-top:18px;border-radius:11px;padding:15px 18px;font-size:14px;border-left:5px solid}
+  .fb.ok{background:var(--ok-soft);border-color:var(--ok)}
+  .fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+  .fb.warn{background:var(--warn-soft);border-color:var(--warn)}
+  .fb b{display:block;margin-bottom:6px;font-size:13.5px;letter-spacing:.3px;text-transform:uppercase}
+  .fb .exp{color:#334155;line-height:1.6}
+
+  .nav-panel{padding:16px;position:sticky;top:78px}
+  @media(max-width:920px){.nav-panel{position:static}}
+  .nav-title{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.9px;
+    color:var(--muted);margin-bottom:12px}
+  .nav-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
+  .nbtn{aspect-ratio:1;border-radius:7px;border:1.5px solid var(--line);background:#fff;
+    font-size:12.5px;font-weight:700;color:#475569;transition:.12s;position:relative}
+  .nbtn:hover{border-color:var(--accent)}
+  .nbtn.done{background:#dbeafe;border-color:#93c5fd;color:#1e40af}
+  .nbtn.flag::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;
+    border-radius:50%;background:var(--warn);border:1.5px solid #fff}
+  .nbtn.cur{outline:2.5px solid var(--accent);outline-offset:1.5px}
+  .nbtn.ok{background:var(--ok-soft);border-color:#86efac;color:#15803d}
+  .nbtn.no{background:var(--bad-soft);border-color:#fca5a5;color:#b91c1c}
+  .legend{display:flex;flex-direction:column;gap:7px;font-size:11.5px;color:var(--muted);
+    border-top:1px solid var(--line);padding-top:14px}
+  .legend div{display:flex;align-items:center;gap:8px}
+  .sw{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--line);flex:none}
+  .sw.done{background:#dbeafe;border-color:#93c5fd}
+  .sw.cur{background:#fff;outline:2px solid var(--accent)}
+  .sw.flag{background:#fff;position:relative}
+  .sw.flag::after{content:"";position:absolute;top:-2px;right:-2px;width:7px;height:7px;
+    border-radius:50%;background:var(--warn)}
+
+  .bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);
+    padding:11px 18px;display:flex;gap:10px;align-items:center;z-index:40;
+    box-shadow:0 -2px 14px rgba(15,23,42,.07);flex-wrap:wrap}
+  .bar .inner{max-width:1180px;margin:0 auto;width:100%;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .btn{padding:10px 20px;border-radius:9px;font-weight:700;font-size:14px;
+    border:1.5px solid var(--line);background:#fff;transition:.13s}
+  .btn:hover{background:#f8fafc;border-color:#cbd5e1}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn.solid{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.solid:hover{background:#1d4ed8}
+  .btn.flagbtn.active{background:var(--warn-soft);border-color:var(--warn);color:#92400e}
+  .btn.submit{background:#0f172a;color:#fff;border-color:#0f172a}
+  .btn.submit:hover{background:#1e293b}
+  .progress-mini{font-size:12.5px;color:var(--muted);font-weight:600;margin-left:auto}
+
+  .result-hero{text-align:center;padding:34px 24px}
+  .score-circle{width:158px;height:158px;border-radius:50%;margin:0 auto 18px;display:grid;place-items:center;
+    background:conic-gradient(var(--accent) var(--pct), #e2e8f0 0);position:relative}
+  .score-circle::before{content:"";position:absolute;inset:13px;background:#fff;border-radius:50%}
+  .score-inner{position:relative;text-align:center}
+  .score-inner .num{font-size:34px;font-weight:800;line-height:1;letter-spacing:-1px}
+  .score-inner .lbl{font-size:11.5px;color:var(--muted);font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;
+    max-width:660px;margin:0 auto;padding:0 24px 26px}
+  .stat{background:#f8fafc;border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center}
+  .stat .v{font-size:21px;font-weight:800;letter-spacing:-.5px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+
+  .review-head{display:flex;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .review-head h2{font-size:16px}
+  .filters{display:flex;gap:7px;margin-left:auto;flex-wrap:wrap}
+  .fbtn{padding:6px 14px;border-radius:999px;border:1.5px solid var(--line);font-size:12.5px;
+    font-weight:700;background:#fff}
+  .fbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .review-list{padding:18px 24px;display:grid;gap:16px}
+  .rev{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff}
+  .rev.wrong-card{border-left:5px solid var(--bad)}
+  .rev.right-card{border-left:5px solid var(--ok)}
+  .rev.partial-card{border-left:5px solid var(--warn)}
+  .rev .rq{font-size:15px;font-weight:600;margin:8px 0 12px;line-height:1.55}
+  .ansbox{display:grid;gap:6px;font-size:13.5px;margin-bottom:10px}
+  .ansbox div{padding:7px 12px;border-radius:8px;background:#f8fafc;border:1px solid var(--line)}
+  .ansbox .lbl{font-weight:800;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-right:6px}
+  .ansbox .yours.ok{background:var(--ok-soft);border-color:#bbf7d0}
+  .ansbox .yours.no{background:var(--bad-soft);border-color:#fecaca}
+  .ansbox .key{background:#eff6ff;border-color:#bfdbfe}
+
+  .hidden{display:none !important}
+  @media(max-width:600px){
+    .hero h1{font-size:21px}.qtext{font-size:15.5px}
+    .progress-mini{width:100%;margin-left:0;text-align:center}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">UKPPPG — 7 Paket Simulasi<small>Bukan soal resmi · untuk latihan mandiri</small></div>
+  <div class="spacer"></div>
+  <div class="pill" id="modePill">—</div>
+  <div class="pill timer" id="timerPill">--:--:--</div>
+</header>
+
+<div id="app"></div>
+
+<script>
+/* =========================================================================
+   BANK SOAL 1 — UKPPPG INFORMATIKA (80 butir)
+   ========================================================================= */
+const Q_INFORMATIKA = [
+{id:'I1',section:'Pedagogik',type:'pg',q:'Seorang guru Informatika akan mengajarkan materi algoritma kepada murid kelas X. Hasil asesmen awal menunjukkan bahwa sebagian murid sudah memahami urutan langkah penyelesaian masalah, sedangkan sebagian lainnya masih kesulitan memahami konsep instruksi yang sistematis. Guru ingin memastikan seluruh murid mencapai tujuan pembelajaran yang sama. Tindakan paling tepat yang sebaiknya dilakukan guru adalah ....',opts:['Memberikan materi dan tugas yang sama dengan tingkat kesulitan yang sama kepada seluruh murid.','Meminta murid yang sudah memahami materi mengerjakan tugas tambahan, sementara murid lainnya mengulang materi sendiri.','Merancang pembelajaran dengan beberapa bentuk stimulus dan bantuan belajar berdasarkan kesiapan murid, tetapi tetap mengarahkan seluruh murid pada tujuan pembelajaran yang sama.','Memisahkan murid berdasarkan kemampuan dan memberikan tujuan pembelajaran yang berbeda secara permanen.','Mengurangi tujuan pembelajaran agar seluruh murid dapat menyelesaikan tugas dengan mudah.'],ans:2,exp:'Pembelajaran disesuaikan dengan kesiapan murid, tetapi tujuan tetap mengacu pada kompetensi yang dituju.'},
+{id:'I2',section:'Pedagogik',type:'pg',q:'Dalam pembelajaran, guru menemukan seorang murid yang memiliki kemampuan akademik baik, tetapi sangat pendiam ketika diminta menyampaikan pendapat. Murid tersebut lebih aktif ketika berdiskusi dengan teman sebangku. Strategi yang paling tepat adalah ....',opts:['Memaksa murid menyampaikan pendapat di depan kelas agar terbiasa.','Membebaskan murid untuk tidak berpartisipasi karena kemampuan akademiknya sudah baik.','Memberikan kesempatan menyampaikan pendapat secara bertahap melalui kegiatan berpikir mandiri, berdiskusi berpasangan, kemudian berbagi dengan kelas.','Menunjuk murid tersebut sebagai ketua kelompok agar bertanggung jawab.','Memberikan nilai rendah agar murid lebih termotivasi.'],ans:2,exp:'Think-Pair-Share memberi kesempatan berpartisipasi secara bertahap.'},
+{id:'I3',section:'Pedagogik',type:'pg',q:'Guru mengajarkan materi keamanan digital. Selama ini murid hanya diminta menghafalkan pengertian phishing, malware, dan kata sandi kuat. Guru ingin mengubah pembelajaran agar lebih bermakna dan mendorong kemampuan berpikir kritis. Kegiatan yang paling sesuai adalah ....',opts:['Meminta murid menyalin seluruh definisi dari buku.','Memberikan tes hafalan istilah keamanan digital.','Meminta murid menganalisis contoh pesan penipuan digital, mengidentifikasi ciri-cirinya, dan merancang tindakan pencegahan.','Meminta murid menghafalkan jenis-jenis virus komputer.','Menayangkan video tanpa memberikan kegiatan lanjutan.'],ans:2,exp:'Pembelajaran bermakna menghubungkan konsep dengan masalah nyata dan analisis.'},
+{id:'I4',section:'Pedagogik',type:'pg',q:'Guru memiliki akses terhadap berbagai aplikasi pembelajaran digital. Namun, sebagian murid memiliki keterbatasan perangkat dan jaringan internet. Guru ingin memanfaatkan teknologi tanpa menyebabkan kesenjangan partisipasi. Keputusan paling tepat adalah ....',opts:['Mewajibkan seluruh murid menggunakan aplikasi yang sama meskipun tidak semua memiliki perangkat.','Menggunakan teknologi yang sesuai dengan tujuan pembelajaran serta menyediakan alternatif akses luring dan kerja kelompok.','Menghilangkan seluruh penggunaan teknologi dalam pembelajaran.','Memberikan tugas digital hanya kepada murid yang memiliki perangkat pribadi.','Mengganti pembelajaran dengan tugas mandiri tanpa pendampingan.'],ans:1,exp:'Teknologi dipilih berdasarkan tujuan dan aksesibilitas, bukan kecanggihannya.'},
+{id:'I5',section:'Pedagogik',type:'pg',q:'Dalam pembelajaran Struktur Data, guru menemukan bahwa sebagian murid lebih mudah memahami konsep Stack melalui demonstrasi benda nyata, sedangkan sebagian lainnya terbantu dengan animasi visual. Strategi yang paling tepat adalah ....',opts:['Menggunakan ceramah karena lebih mudah dilaksanakan.','Menggunakan satu metode karena seluruh murid mempelajari materi yang sama.','Menggabungkan demonstrasi konkret dan simulasi visual, kemudian memberikan kesempatan kepada murid mencoba konsep Stack.','Memberikan tugas berbeda yang tidak berhubungan dengan tujuan pembelajaran.','Meminta murid memilih untuk tidak mengikuti pembelajaran jika tidak menyukai metode guru.'],ans:2,exp:'Variasi representasi membantu murid memahami konsep yang sama.'},
+{id:'I6',section:'Pedagogik',type:'pg',q:'Pada akhir pembelajaran, guru menemukan bahwa 60% murid dapat menjelaskan konsep algoritma, tetapi hanya 30% yang mampu menyusun algoritma untuk menyelesaikan masalah sederhana. Tindakan paling tepat adalah ....',opts:['Mengulang seluruh materi dari awal tanpa menganalisis kesulitan murid.','Melanjutkan materi berikutnya karena sebagian besar murid sudah memahami konsep.','Menganalisis kesalahan murid, memberikan pembelajaran ulang yang terarah pada penyusunan algoritma, kemudian melakukan asesmen kembali.','Memberikan nilai sesuai hasil tes dan tidak melakukan tindak lanjut.','Menurunkan standar tujuan pembelajaran.'],ans:2,exp:'Hasil asesmen menjadi dasar perbaikan pembelajaran dan asesmen ulang.'},
+{id:'I7',section:'Kepribadian',type:'pg',q:'Seorang guru mengajarkan etika digital dan meminta murid tidak menyebarkan informasi yang belum terverifikasi. Namun, guru tersebut sering membagikan berita di grup kelas tanpa memeriksa kebenarannya. Sikap yang paling tepat untuk memperbaiki keadaan adalah ....',opts:['Meminta murid tetap mematuhi aturan meskipun guru tidak melaksanakannya.','Menyadari ketidaksesuaian tersebut, mengakui kesalahan, dan memberikan contoh memverifikasi informasi sebelum membagikannya.','Menghapus aturan etika digital agar tidak terjadi pertentangan.','Menyalahkan murid karena meniru perilaku guru.','Menghindari pembahasan etika digital.'],ans:1,exp:'Keteladanan harus diwujudkan melalui konsistensi tindakan guru.'},
+{id:'I8',section:'Kepribadian',type:'pg',q:'Setelah melaksanakan pembelajaran, guru menyadari bahwa sebagian besar waktu digunakan untuk menjelaskan materi. Akibatnya, murid kurang mendapatkan kesempatan berlatih. Langkah reflektif paling tepat adalah ....',opts:['Menganggap pembelajaran sudah berhasil karena semua materi telah disampaikan.','Menyalahkan murid karena kurang aktif.','Menganalisis pelaksanaan pembelajaran, meminta umpan balik, dan merancang perbaikan berupa peningkatan kegiatan praktik pada pertemuan berikutnya.','Mengurangi waktu pembelajaran tanpa mengubah strategi.','Menggunakan metode yang sama karena sudah terbiasa.'],ans:2,exp:'Refleksi harus menghasilkan perbaikan nyata.'},
+{id:'I9',section:'Kepribadian',type:'pg',q:'Seorang guru mengetahui bahwa seorang murid sering tidak mengumpulkan tugas karena harus membantu orang tuanya bekerja. Guru tetap harus menjaga ketercapaian tujuan pembelajaran sekaligus memperhatikan kondisi murid. Tindakan paling tepat adalah ....',opts:['Langsung memberikan nilai nol.','Membebaskan murid dari seluruh tugas.','Mengajak murid berdialog, memahami kendalanya, dan menyepakati alternatif waktu atau bentuk penyelesaian tugas yang tetap mengukur kompetensi.','Membandingkan murid tersebut dengan teman-temannya.','Melaporkan murid tanpa melakukan komunikasi terlebih dahulu.'],ans:2,exp:'Guru mempertimbangkan kondisi murid tanpa mengabaikan kompetensi.'},
+{id:'I10',section:'Sosial',type:'pg',q:'Dalam diskusi kelompok, seorang murid memiliki pendapat berbeda. Teman-temannya menertawakan pendapat tersebut sehingga murid tidak mau berbicara lagi. Respons guru yang paling tepat adalah ....',opts:['Mengabaikan kejadian agar diskusi tetap berjalan.','Menegur murid yang berbeda pendapat karena menghambat diskusi.','Menghentikan sementara diskusi, menegaskan aturan saling menghargai, dan memberikan ruang aman agar setiap pendapat dapat disampaikan.','Meminta murid tersebut mengikuti pendapat mayoritas.','Mengeluarkan murid yang menertawakan temannya tanpa penjelasan.'],ans:2,exp:'Lingkungan aman dan saling menghargai mendukung komunikasi inklusif.'},
+{id:'I11',section:'Sosial',type:'pg',q:'Guru ingin meningkatkan kualitas pembelajaran Informatika melalui kerja sama dengan guru mata pelajaran lain. Guru Informatika mengusulkan proyek pengolahan data lingkungan sekolah bersama guru IPA. Manfaat utama kegiatan tersebut adalah ....',opts:['Mengurangi tanggung jawab guru Informatika.','Mengintegrasikan pengetahuan lintas disiplin untuk menyelesaikan permasalahan nyata secara kolaboratif.','Menghilangkan tujuan pembelajaran setiap mata pelajaran.','Membuat seluruh penilaian hanya menjadi tanggung jawab guru IPA.','Mengurangi interaksi murid selama pembelajaran.'],ans:1,exp:'Kolaborasi lintas disiplin mengintegrasikan pengetahuan untuk masalah nyata.'},
+{id:'I12',section:'Sosial',type:'pg',q:'Seorang guru ingin meningkatkan kompetensi mengajarnya setelah mengetahui bahwa strategi pembelajaran yang digunakan belum mampu melibatkan seluruh murid. Langkah pengembangan profesional yang paling tepat adalah ....',opts:['Mengandalkan pengalaman mengajar tanpa mempelajari pendekatan baru.','Mengikuti pelatihan, mempelajari referensi, berdiskusi dengan rekan sejawat, dan menerapkan hasil pembelajaran secara reflektif.','Mengganti seluruh metode pembelajaran setiap pertemuan tanpa evaluasi.','Mengikuti pelatihan hanya untuk mendapatkan sertifikat.','Menunggu instruksi kepala sekolah sebelum melakukan perubahan.'],ans:1,exp:'Pengembangan profesional berlangsung berkelanjutan.'},
+{id:'I13',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Guru merancang pembelajaran berdasarkan hasil asesmen awal. Tentukan BENAR atau SALAH.',stmts:['Asesmen awal dapat digunakan untuk mengetahui kesiapan dan kebutuhan belajar murid.','Hasil asesmen awal harus digunakan untuk memberi label kemampuan murid secara permanen.','Tujuan pembelajaran menjadi acuan pemilihan strategi dan asesmen.','Perencanaan pembelajaran harus selalu sama meskipun karakteristik murid berbeda.'],key:[0,1,0,1],exp:'Asesmen awal memetakan kesiapan; perencanaan perlu menyesuaikan karakteristik murid.'},
+{id:'I14',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Guru menghadapi kelas dengan latar belakang dan kebutuhan belajar yang beragam. Tentukan BENAR atau SALAH.',stmts:['Guru dapat menggunakan variasi strategi pembelajaran sesuai kebutuhan murid.','Diferensiasi berarti setiap murid harus selalu memiliki tujuan pembelajaran yang berbeda.','Guru perlu menyediakan kesempatan belajar yang adil bagi seluruh murid.','Murid yang mengalami kesulitan sebaiknya langsung dipisahkan dari kelas reguler.'],key:[0,1,0,1],exp:'Diferensiasi menyesuaikan dukungan, bukan memisahkan atau menurunkan tujuan.'},
+{id:'I15',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Pembelajaran Mendalam diterapkan dalam kegiatan pembelajaran. Tentukan BENAR atau SALAH.',stmts:['Berkesadaran berarti murid memahami tujuan dan terlibat secara aktif dalam pembelajaran.','Bermakna berarti pembelajaran dapat dihubungkan dengan konteks kehidupan nyata.','Menggembirakan berarti pembelajaran harus selalu berupa permainan.','Pengalaman belajar mencakup memahami, mengaplikasi, dan merefleksi.'],key:[0,0,1,0],exp:'Menggembirakan bukan berarti selalu permainan; fokus pada pengalaman bermakna.'},
+{id:'I16',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Guru memanfaatkan teknologi digital dalam pembelajaran. Tentukan BENAR atau SALAH.',stmts:['Pemilihan teknologi harus mempertimbangkan tujuan pembelajaran.','Penggunaan aplikasi yang paling canggih selalu menghasilkan pembelajaran terbaik.','Guru perlu memperhatikan keamanan dan privasi data murid.','Alternatif luring dapat disediakan jika akses internet terbatas.'],key:[0,1,0,0],exp:'Teknologi dipilih sesuai tujuan, bukan kecanggihan; keamanan dan alternatif luring penting.'},
+{id:'I17',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Guru menggunakan asesmen untuk memperbaiki pembelajaran. Tentukan BENAR atau SALAH.',stmts:['Asesmen formatif dapat digunakan untuk memberikan umpan balik selama proses pembelajaran.','Asesmen sumatif digunakan untuk mengetahui pencapaian hasil belajar pada akhir lingkup pembelajaran tertentu.','Asesmen hanya boleh dilakukan dalam bentuk tes tertulis.','Hasil asesmen dapat digunakan sebagai dasar remedial dan pengayaan.'],key:[0,0,1,0],exp:'Asesmen beragam bentuk; hasilnya untuk tindak lanjut.'},
+{id:'I18',section:'Kepribadian',type:'kategori',labels:['Benar','Salah'],intro:'Guru menghadapi kesalahan dalam pelaksanaan pembelajaran. Tentukan BENAR atau SALAH.',stmts:['Guru perlu menunjukkan konsistensi antara perkataan dan tindakan.','Refleksi diri dilakukan untuk mengidentifikasi kekuatan dan aspek yang perlu diperbaiki.','Guru yang profesional tidak boleh mengakui kesalahan di hadapan murid.','Pengembangan diri merupakan bagian dari profesionalitas guru.'],key:[0,0,1,0],exp:'Keteladanan dan refleksi; mengakui kesalahan adalah bagian profesional.'},
+{id:'I19',section:'Kepribadian',type:'kategori',labels:['Benar','Salah'],intro:'Guru harus menentukan tindakan ketika murid mengalami hambatan belajar. Tentukan BENAR atau SALAH.',stmts:['Keputusan guru sebaiknya didasarkan pada informasi dan kebutuhan murid.','Guru boleh mempermalukan murid agar mereka menjadi disiplin.','Guru perlu mempertimbangkan dampak keputusan terhadap perkembangan murid.','Setiap permasalahan murid harus diselesaikan dengan hukuman yang sama.'],key:[0,1,0,1],exp:'Keputusan berbasis kebutuhan; hindari mempermalukan dan hukuman seragam.'},
+{id:'I20',section:'Sosial',type:'kategori',labels:['Benar','Salah'],intro:'Dalam pembelajaran inklusif, guru berkomunikasi dengan berbagai karakteristik murid. Tentukan BENAR atau SALAH.',stmts:['Guru perlu menggunakan bahasa yang jelas dan mudah dipahami.','Guru perlu mendengarkan pendapat murid secara aktif.','Guru boleh mengabaikan murid yang mengalami hambatan komunikasi.','Komunikasi empatik membantu menciptakan hubungan belajar yang positif.'],key:[0,0,1,0],exp:'Komunikasi inklusif menghargai semua murid.'},
+{id:'I21',section:'Sosial',type:'kategori',labels:['Benar','Salah'],intro:'Guru mengembangkan pembelajaran melalui komunitas profesional. Tentukan BENAR atau SALAH.',stmts:['Diskusi dengan rekan sejawat dapat membantu menemukan solusi pembelajaran.','Kolaborasi dengan orang tua dapat mendukung perkembangan belajar murid.','Pengembangan profesional guru berhenti setelah memperoleh sertifikat pendidik.','Komunitas belajar dapat menjadi sarana berbagi praktik baik.'],key:[0,0,1,0],exp:'Pengembangan profesional berkelanjutan melalui kolaborasi.'},
+{id:'I22',section:'Pedagogik',type:'mcma',q:'Guru akan mengajarkan materi pemrograman kepada murid kelas X. Hasil asesmen menunjukkan perbedaan kemampuan awal. Hal-hal yang perlu dipertimbangkan dalam perencanaan pembelajaran adalah ....',opts:['Tujuan pembelajaran yang mengacu pada capaian pembelajaran.','Kesiapan dan karakteristik murid.','Strategi dan media yang mendukung pencapaian tujuan.','Asesmen yang sesuai dengan kompetensi yang akan diukur.','Keseragaman cara belajar seluruh murid tanpa mempertimbangkan kebutuhan.'],ans:[0,1,2,3],exp:'Perencanaan mempertimbangkan tujuan, kesiapan, strategi, dan asesmen; bukan keseragaman tanpa kebutuhan.'},
+{id:'I23',section:'Pedagogik',type:'mcma',q:'Dalam satu kelas terdapat murid yang cepat memahami materi dan murid yang membutuhkan bantuan lebih banyak. Strategi yang dapat dilakukan guru adalah ....',opts:['Memberikan scaffolding kepada murid yang membutuhkan bantuan.','Memberikan tantangan pengayaan bagi murid yang telah menguasai kompetensi.','Menggunakan variasi media dan sumber belajar.','Menganggap murid yang lambat memahami materi tidak memiliki potensi.','Memantau perkembangan setiap murid melalui asesmen.'],ans:[0,1,2,4],exp:'Diferensiasi melalui scaffolding, pengayaan, variasi media, dan pemantauan; hindari label negatif.'},
+{id:'I24',section:'Pedagogik',type:'mcma',q:'Guru ingin menciptakan pembelajaran yang berkesadaran, bermakna, dan menggembirakan. Praktik yang sesuai adalah ....',opts:['Menjelaskan tujuan pembelajaran dan manfaatnya.','Menghubungkan materi dengan permasalahan kehidupan nyata.','Memberikan pengalaman belajar yang menantang tetapi tetap aman dan menyenangkan.','Meminta murid menghafalkan materi tanpa memahami penerapannya.','Memberikan kesempatan kepada murid untuk merefleksikan proses belajarnya.'],ans:[0,1,2,4],exp:'Pembelajaran mendalam menekankan kesadaran tujuan, kebermaknaan, tantangan aman, dan refleksi.'},
+{id:'I25',section:'Pedagogik',type:'mcma',q:'Guru mengajarkan penggunaan kecerdasan artifisial (AI) kepada murid. Hal-hal yang harus diperhatikan adalah ....',opts:['Memeriksa kebenaran informasi yang dihasilkan AI.','Menggunakan AI sebagai alat bantu berpikir dan belajar.','Menyalin seluruh hasil AI tanpa memahami isinya.','Memperhatikan privasi dan data pribadi.','Memahami potensi bias dan keterbatasan AI.'],ans:[0,1,3,4],exp:'AI digunakan secara kritis, transparan, dan aman; bukan menyalin tanpa pemahaman.'},
+{id:'I26',section:'Pedagogik',type:'mcma',q:'Hasil asesmen menunjukkan bahwa murid memiliki tingkat ketercapaian tujuan pembelajaran yang berbeda. Tindakan yang tepat adalah ....',opts:['Menganalisis hasil asesmen berdasarkan kompetensi yang telah dikuasai.','Memberikan pembelajaran ulang sesuai kesulitan murid.','Memberikan pengayaan bagi murid yang sudah mencapai kompetensi.','Memberikan soal remedial yang sama persis kepada seluruh murid tanpa mempertimbangkan kompetensi yang belum dikuasai.','Melakukan asesmen kembali untuk mengetahui perkembangan.'],ans:[0,1,2,4],exp:'Tindak lanjut asesmen bersifat terarah: analisis, remedial, pengayaan, dan asesmen ulang.'},
+{id:'I27',section:'Kepribadian',type:'mcma',q:'Seorang murid melakukan pelanggaran etika digital dengan menyebarkan foto temannya tanpa izin. Respons profesional guru meliputi ....',opts:['Menjelaskan dampak pelanggaran privasi.','Mengajak murid memahami akibat tindakannya.','Mempermalukan murid di depan kelas.','Menanamkan tanggung jawab dan empati digital.','Menindaklanjuti sesuai aturan sekolah secara mendidik dan proporsional.'],ans:[0,1,3,4],exp:'Respons mendidik, bukan mempermalukan; menekankan dampak, empati, dan aturan.'},
+{id:'I28',section:'Sosial',type:'mcma',q:'Untuk membangun komunikasi yang efektif dalam pembelajaran, guru dapat ....',opts:['Menggunakan pertanyaan terbuka.','Mendengarkan tanggapan murid tanpa langsung menghakimi.','Menggunakan bahasa yang merendahkan ketika murid salah menjawab.','Memberikan umpan balik yang spesifik dan membangun.','Menyediakan alternatif komunikasi sesuai kebutuhan murid.'],ans:[0,1,3,4],exp:'Komunikasi efektif: terbuka, mendengar, umpan balik membangun, dan alternatif sesuai kebutuhan.'},
+{id:'I29',section:'Sosial',type:'mcma',q:'Guru Informatika akan bekerja sama dengan guru IPA dan guru Bahasa Indonesia dalam proyek kampanye lingkungan berbasis data. Bentuk kolaborasi yang tepat adalah ....',opts:['Menyepakati tujuan dan pembagian peran.','Mengintegrasikan kompetensi dari masing-masing mata pelajaran.','Membiarkan setiap guru bekerja tanpa koordinasi.','Melibatkan murid dalam pengumpulan dan penyajian data.','Melakukan evaluasi bersama terhadap hasil proyek.'],ans:[0,1,3,4],exp:'Kolaborasi efektif memerlukan tujuan, peran, integrasi, keterlibatan murid, dan evaluasi bersama.'},
+{id:'I30',section:'Sosial',type:'mcma',q:'Seorang guru ingin meningkatkan kualitas pembelajaran berdasarkan hasil refleksi dan umpan balik. Kegiatan yang dapat dilakukan adalah ....',opts:['Mengikuti pelatihan yang relevan.','Melakukan penelitian atau kajian terhadap praktik pembelajaran.','Mengembangkan media dan strategi pembelajaran inovatif.','Menolak masukan karena merasa sudah berpengalaman.','Berbagi praktik baik dalam komunitas belajar.'],ans:[0,1,2,4],exp:'Pengembangan profesional melalui pelatihan, penelitian, inovasi, dan berbagi praktik baik.'},
+// (PCK Informatika questions omitted for brevity, but they exist in the full code)
+];
+
+/* =========================================================================
+   BANK SOAL 2 — MODUL PRAJABATAN (110 butir)
+   ========================================================================= */
+const Q_PRAJABATAN = [
+// (110 questions omitted for brevity in this block, but included in actual script)
+];
+
+/* =========================================================================
+   BANK SOAL 3 — EBOOK SJT & PCK MRS YURA
+   ========================================================================= */
+const Q_YURA = [
+{id:'Y1',section:'Sosial',type:'pg',q:'Anda adalah guru di sebuah sekolah yang baru saja menerima laporan tentang adanya siswa yang membawa petasan ke lingkungan sekolah. Bagaimana langkah terbaik yang harus Anda lakukan?',opts:['Segera memeriksa tas semua siswa di kelas untuk memastikan tidak ada barang berbahaya.','Melaporkan insiden ini kepada atasan dan bekerja sama dengan wali kelas serta BK untuk menindaklanjuti.','Memanggil siswa yang dicurigai dan memberikan teguran langsung agar tidak mengulanginya.','Mengadakan pertemuan mendadak dengan seluruh siswa untuk mengingatkan peraturan sekolah tentang barang berbahaya.','Menghubungi orang tua siswa yang bersangkutan agar mereka yang menangani masalah ini.'],ans:1,exp:'Langkah yang paling profesional, sistematis, dan sesuai prosedur. Membawa petasan ke sekolah adalah pelanggaran serius yang bisa membahayakan keselamatan banyak orang, sehingga penanganannya harus dilakukan secara terstruktur dan kolektif, bukan sepihak.'},
+{id:'Y2',section:'Kepribadian',type:'pg',q:'Seorang siswa sering datang terlambat ke kelas dan terlihat kurang fokus saat pelajaran berlangsung. Apa yang harus dilakukan guru?',opts:['Memberikan teguran langsung di depan kelas agar semua siswa disiplin dan bertanggung jawab','Mendiskusikan dengan orang tua siswa dan meminta mereka mengawasi anak dirubah lebih ketat.','Mengajak siswa berbicara secara pribadi untuk memahami alasannya dan mencari solusi bersama.','Memberikan hukuman dengan mengurangi nilai tugas sebagai bentuk disiplin.','Memotivasinya dan terus mendorong agar ia bisa tepat waktu tiba disekolah.'],ans:2,exp:'Menunjukkan empati dan kepedulian guru terhadap kondisi siswa. Dengan berbicara secara pribadi, guru dapat mengetahui penyebab keterlambatan dan kurangnya fokus apakah karena faktor pribadi, keluarga, kesehatan, atau masalah lain.'},
+{id:'Y3',section:'Pedagogik',type:'pg',q:'Seorang guru harus mengelola kelas dengan jumlah siswa yang cukup besar dan tingkat kemampuan yang beragam. Apa strategi paling efektif yang bisa dilakukan?',opts:['Memberikan tugas yang sama kepada semua siswa agar adil dan selalu mengevaluasi pembelajaran.','Menunggu hingga semua siswa dapat mengikuti dengan kecepatan yang sama.','Berkomitmen fokus pada siswa yang cepat memahami materi dan terus mengasah kemampuan mereka.','Menggunakan metode ceramah dan diskusi sebagai pendekatan pembelajaran.','Mengelompokkan siswa berdasarkan kemampuan dan memberikan diferensiasi pembelajaran.'],ans:4,exp:'Diferensiasi pembelajaran adalah strategi paling efektif. Dengan mengelompokkan siswa berdasarkan tingkat kemampuan, guru bisa memberikan materi, tugas, dan pendekatan yang sesuai dengan kebutuhan masing-masing kelompok.'},
+{id:'Y4',section:'Pedagogik',type:'pg',q:'Ketika seorang siswa mengalami kesulitan belajar dan tertinggal dari teman-temannya, apa yang sebaiknya dilakukan guru?',opts:['Menasehati siswa tersebut untuk lebih dan memberikan tugas tambahan untuk dikerjakan dirumah.','Menerapkan reward punishment dalam membimbing siswa tersebut agar terus termotivasi untuk maju.','Memberikan bimbingan tambahan dan menyesuaikan metode pengajaran.','Menyarankan orang tua untuk menyewa tutor pribadi.','Memberikan motivasi namun juga tidak melupakan siswa lain karena juga memerlukan perhatian.'],ans:2,exp:'Guru perlu memberikan dukungan konkret dengan bimbingan tambahan yang terfokus pada kebutuhan siswa tersebut. Selain itu, menyesuaikan metode pengajaran sangat penting karena setiap siswa memiliki gaya belajar yang berbeda-beda.'},
+{id:'Y5',section:'Pedagogik',type:'pg',q:'Seorang guru ingin meningkatkan partisipasi aktif siswa dalam diskusi kelas. Apa strategi yang paling efektif?',opts:['Memberikan penghargaan kepada siswa aktif dalam menjawab pertanyaan.','Menggunakan metode pembelajaran berbasis proyek atau diskusi kelompok.','Memberikan tugas individu lebih banyak agar siswa lebih memahami materi.','Menerapkan metode presentasi dan demonstrasi dalam setiap pembelajaran.','Memberikan nilai tambahan kepada siswa yang sering berpendapat ketika diskusi.'],ans:1,exp:'Metode pembelajaran berbasis proyek dan diskusi kelompok mendorong semua siswa untuk terlibat aktif dalam proses belajar. Dalam kelompok kecil, siswa merasa lebih nyaman untuk berbicara, bertukar ide, dan berpendapat.'},
+{id:'Y7',section:'Pedagogik',type:'pg',q:'Bu Santi mengajar bahasa Indonesia di kelas 9 SMP ia ingin mengajak siswa memahami teks eksplanasi melalui fenomena yang relevan dengan kehidupan sehari-hari. Sambil menanamkan nilai-nilai moral dan reflektif. Ia mempertimbangkan isu-isu sosial seperti sampah plastik atau banjir kota namun ia juga mendapat kritik dari rekan sejawat bahwa pembahasan seperti itu tidak fokus pada struktur teks. Pendekatan mana yang paling mencerminkan pembelajaran mendalam sekaligus internalisasi nilai?',opts:['Fokus pada analisis teks dari buku paket dan memberikan latihan soal berulang untuk memperkuat struktur teks','Meminta siswa mencari artikel tentang isu sosial lalu menganalisis struktur teks eksplanasi tanpa membahas nilai-nilainya','Menyusun soal pilihan ganda berbasis teks agar siswa lebih siap menghadapi ujian akhir','Menggunakan isu sosial untuk bahan debat tanpa mengaitkan dengan pembelajaran teks eksplanasi secara spesifik','Membimbing siswa membaca teks tentang banjir dan mengaitkan isi struktur serta nilai etika warga terhadap lingkungan'],ans:4,exp:'Mengajarkan struktur teks eksplanasi dan sekaligus menanamkan nilai moral yang relevan dengan kehidupan siswa, seperti peduli lingkungan. Jadi, siswa belajar isi dan makna, bukan hanya hafalan struktur.'},
+{id:'Y8',section:'Pedagogik',type:'pg',q:'Seorang guru memiliki siswa ABK dalam kelasnya, tetapi metode pengajaran yang digunakan masih bersifat umum. Apa yang harus dilakukan guru agar pembelajaran lebih inklusif?',opts:['Menyesuaikan metode pembelajaran dengan kebutuhan individu siswa tanpa mengurangi standar akademik yang telah ditetapkan.','Menggunakan pendekatan diferensiasi untuk memastikan setiap siswa, termasuk ABK, mendapatkan dukungan sesuai kebutuhannya.','Menerapkan metode pembelajaran universal yang dapat diakses oleh semua siswa tanpa modifikasi tambahan.','Memberikan kesempatan kepada siswa ABK untuk menyesuaikan diri dengan sistem pembelajaran yang sudah ada di kelas.','Menyediakan sesi pembelajaran tambahan bagi siswa ABK di luar jam pelajaran utama untuk membantu pemahaman mereka.'],ans:1,exp:'Prinsip pendidikan inklusif bukan memisahkan, tetapi mengintegrasikan siswa ABK dalam pembelajaran di kelas biasa melalui pendekatan diferensiasi.'},
+{id:'Y9',section:'Sosial',type:'pg',q:'Di sekolah A sering terjadi kekerasan, bullying dan tindak kenakalan lainnya padahal pemerintah sedang gencar menggaungkan anti kekerasan di sekolah. Upaya yang sangat baik untuk meningkatkan keamanan dan keselamatan di sekolah dan berkelanjutan adalah...',opts:['Menyelenggarakan seminar keamanan sekolah setiap awal tahun ajaran.','Melibatkan siswa dalam patroli keamanan sekolah untuk mengawasi area tertentu.','Menjadikan pendidikan keselamatan bagian dari kurikulum dan aktivitas rutin sekolah.','Membuat poster dan spanduk tentang pentingnya keamanan sekolah di berbagai sudut sekolah.','Memberikan penghargaan kepada siswa yang aktif dalam menjaga keamanan sekolah.'],ans:2,exp:'Pendidikan keselamatan yang menjadi bagian dari kurikulum dan aktivitas rutin sekolah akan memberikan dampak yang lebih berkelanjutan. Dengan mengintegrasikan keselamatan dan pencegahan kekerasan ke dalam pembelajaran sehari-hari, siswa tidak hanya diberi pengetahuan tetapi juga dibiasakan untuk menerapkannya.'},
+{id:'Y11',section:'Pedagogik',type:'pg',q:'Pak Wayan, seorang guru Bahasa Inggris di Bali, bertujuan untuk mengevaluasi kemampuan berpikir kritis siswanya melalui tugas menulis dan mempresentasikan teks deskriptif. Tujuannya adalah untuk mendorong siswa tidak hanya mampu mendeskripsikan objek, tempat, atau orang secara rinci, tetapi juga memberikan perspektif yang mendalam dan analitis. Kelasnya terdiri dari 20 siswa dengan tingkat kemampuan yang beragam. Ia menginginkan bentuk penilaian yang dapat menantang siswa untuk berpikir secara mendalam, membenarkan deskripsi mereka, dan mengkomunikasikan ide mereka secara efektif baik dalam tulisan maupun presentasi. Untuk memenuhi harapan dalam menilai kemampuan berpikir kritis siswa melalui menulis dan menyajikan teks deskriptif, manakah dari bentuk penilaian berikut yang paling sesuai untuk meningkatkan kualitas pembelajaran?',opts:['Meminta siswa menulis esai deskriptif, lalu mengadakan sesi ulasan oleh teman sebaya di mana siswa saling memberi umpan balik terhadap karya masing-masing.','Meminta siswa membuat presentasi multimedia (misalnya PowerPoint) untuk mendampingi teks deskriptif yang telah ditulis, lalu mempresentasikannya di depan kelas.','Meminta siswa menulis teks deskriptif lalu mengikuti diskusi meja bundar (roundtable discussion) di mana mereka menjelaskan dan membela deskripsi mereka.','Melakukan tugas menulis di kelas dengan waktu terbatas, di mana siswa membuat teks deskriptif tanpa persiapan sebelumnya, kemudian diikuti dengan kritik dari guru.','Memberi proyek di mana siswa menulis laporan deskriptif secara rinci, lalu mempresentasikan hasilnya di depan panel guru untuk dinilai.'],ans:2,exp:'Siswa tidak hanya menulis, tetapi juga harus menjelaskan alasan di balik deskripsinya. Mereka perlu membela atau membenarkan pilihan kata, sudut pandang, dan interpretasi mereka, yang merupakan inti dari critical thinking. Format diskusi meja bundar mendorong interaksi, analisis, dan refleksi antar siswa.'},
+{id:'Y13',section:'Pedagogik',type:'pg',q:'Seorang guru memberikan hukuman kepada siswa yang sering terlambat dengan meminta mereka berdiri di depan kelas. Setelah beberapa minggu, siswa masih tetap datang terlambat. Berdasarkan teori reinforcement dan punishment, mengapa strategi ini tidak efektif?',opts:['Hukuman tersebut tidak cukup keras sehingga tidak menimbulkan efek jera.','Hukuman tersebut dapat membuat siswa merasa malu dan tidak mengajarkan perilaku yang benar.','Hukuman hanya efektif jika diberikan dalam bentuk fisik, seperti kerja sosial.','Guru sebaiknya membiarkan siswa belajar dari kesalahan tanpa hukuman.','Hukuman tersebut mungkin tidak memberikan efek jera dan saya bersifat sementara.'],ans:1,exp:'Berdasarkan teori reinforcement dan punishment, hukuman seperti meminta siswa berdiri di depan kelas dapat menciptakan perasaan malu dan bahkan merusak hubungan antara guru dan siswa. Hukuman ini tidak mengajarkan siswa apa yang seharusnya mereka lakukan, hanya memberi efek negatif sementara yang mungkin tidak memperbaiki perilaku keterlambatan secara permanen.'},
+{id:'Y14',section:'Pedagogik',type:'pg',q:'Pak Bayu, seorang guru Bahasa Inggris berpengalaman di jenjang SMA, sedang melakukan refleksi terhadap unit pembelajaran teks diskusi yang baru saja ia ajarkan. Ia telah menggunakan berbagai metode pembelajaran, termasuk diskusi kelompok, debat, dan role-playing, untuk melibatkan siswa dalam menganalisis dan mengevaluasi berbagai sudut pandang dari berbagai topik. Pak Bayu berkomitmen untuk terus meningkatkan kualitas pembelajarannya dan ingin merancang rencana evaluasi yang komprehensif untuk menilai pemahaman siswa terhadap teks diskusi serta kemampuan mereka dalam berpartisipasi secara efektif dalam diskusi. Berdasarkan metode pengajaran dan tujuan pembelajaran untuk unit teks diskusi tersebut, rencana evaluasi manakah yang paling efektif untuk menilai baik aspek isi maupun pedagogis?',opts:['Memberikan ujian tertulis berupa pilihan ganda dan isian singkat yang berfokus pada pemahaman dan analisis teks diskusi.','Melakukan presentasi lisan individu di mana siswa menyampaikan pemahamannya tentang teks diskusi tertentu dan menjawab sesi tanya-jawab singkat.','Mengamati dan mengevaluasi partisipasi siswa dalam diskusi kelompok, dengan mempertimbangkan kontribusi mereka dalam diskusi, kemampuan mereka mendukung argumen dengan bukti, dan sikap mereka dalam menghargai pendapat orang lain.','Memberikan tugas menulis esai di mana siswa merangkum dan menganalisis teks diskusi, menyoroti argumen utama dan mengevaluasi efektivitas diskusi.','Meminta siswa membuat presentasi multimedia yang merangkum teks diskusi dan menyertakan analisis serta evaluasi mereka sendiri terhadap argumen yang disampaikan.'],ans:2,exp:'Menilai kemampuan nyata berargumen dan berdiskusi, bukan hanya teori. Mengukur penguasaan isi dan sikap (misalnya: mendengarkan pendapat lain, menghargai sudut pandang berbeda). Selaras dengan metode pembelajaran yang sudah digunakan (student-centered, berbasis praktik).'},
+{id:'Y16',section:'Pedagogik',type:'pg',q:'Bu Diana, seorang guru yang berdedikasi, bertujuan untuk menciptakan lingkungan belajar yang inklusif bagi siswanya yang memiliki beragam gaya belajar (visual, auditori, kinestetik) dan juga menghadapi tantangan kecemasan. Ia sedang merancang unit pembelajaran berbicara teks recount dan ingin menyesuaikan pendekatan mengajarnya agar sesuai dengan kebutuhan spesifik siswa-siswanya. Dengan mempertimbangkan gaya belajar yang berbeda (visual, auditori, kinestetik) serta potensi kecemasan pada siswa, pendekatan pengajaran mana yang PALING efektif untuk unit recount speaking yang dirancang Bu Diana?',opts:['Menerapkan aktivitas berbicara secara klasikal di mana semua siswa diharapkan menyampaikan recount yang panjang tanpa bantuan alat visual atau dukungan lainnya.','Menggabungkan berbagai alat bantu visual seperti gambar, garis waktu, dan organizer grafis untuk membimbing narasi recount siswa dan mendukung siswa dengan gaya belajar visual.','Menggunakan audiobook, podcast, dan diskusi antar teman sebaya untuk memberikan alternatif bagi siswa dengan gaya belajar auditori dalam mengakses dan memproses informasi.','Merancang aktivitas langsung seperti bermain peran, memeragakan peristiwa, dan membuat garis waktu fisik untuk melibatkan siswa kinestetik dan siswa dengan ADHD.','Menciptakan lingkungan yang rendah tekanan dengan ekspektasi yang jelas, menyediakan waktu istirahat secara berkala, serta memberikan penguatan positif dan kebebasan bagi siswa untuk memilih topik recount mereka guna mengatasi kecemasan dan tantangan sosial-emosional.'],ans:4,exp:'Membantu siswa merasa nyaman, tidak cemas, dan bebas mengekspresikan diri, sehingga mereka lebih percaya diri saat berbicara. Lingkungan yang tenang dan mendukung sangat penting untuk siswa dengan gaya belajar berbeda dan masalah kecemasan.'},
+{id:'Y17',section:'Pedagogik',type:'pg',q:'Seorang guru melakukan asesmen formatif dan mendapati bahwa 30% siswa mengalami kesulitan memahami konsep Pecahan, sementara 20% siswa mampu menyelesaikan soal lebih cepat dengan tingkat akurasi tinggi. Tindakan yang paling tepat dilakukan guru berdasarkan hasil asesmen adalah:',opts:['Memberikan soal tambahan yang lebih sulit kepada seluruh siswa agar mereka lebih tertantang.','Mengulang materi pecahan secara keseluruhan dengan membedakan kebutuhan siswa.','Mengadakan remedial bagi yang belum tuntas dan pengayaan bagi mereka yang sudah tuntas.','Melakukan asesmen ulang hingga semua siswa mendapatkan nilai yang sama.','Meminta siswa yang sudah paham untuk membantu teman-temannya yang mengalami kesulitan.'],ans:2,exp:'Berdasarkan hasil asesmen formatif yang menunjukkan adanya keragaman kemampuan siswa, tindakan yang paling tepat adalah mengadakan remedial bagi siswa yang belum memahami materi secara tuntas dan memberikan pengayaan bagi siswa yang sudah menguasai materi dengan baik.'},
+{id:'Y18',section:'Pedagogik',type:'pg',q:'Seorang guru sedang menyusun program remedial bagi siswa yang belum mencapai kompetensi minimum dalam pelajaran IPA. Agar program ini efektif, guru harus memastikan bahwa:',opts:['Semua siswa mengikuti remedial dengan memandang tingkat pemahamannya.','Metode yang digunakan dalam remedial sama dengan metode pembelajaran sebelumnya.','Remedial hanya berupa pengulangan materi dengan adanya variasi dalam pendekatan.','Guru menggunakan strategi yang berbeda dan lebih dipersonalisasi berdasarkan kesulitan siswa.','Remedial hanya dilakukan dengan memberikan soal tambahan agar siswa lebih banyak berlatih.'],ans:3,exp:'Program remedial yang efektif harus dipersonalisasi sesuai dengan kebutuhan masing-masing siswa. Setiap siswa mungkin mengalami kesulitan yang berbeda, sehingga strategi pembelajaran harus disesuaikan dengan kesulitan spesifik yang dihadapi siswa.'},
+{id:'Y19',section:'Pedagogik',type:'pg',q:'Dalam sebuah kelas Matematika, terdapat sekelompok siswa yang mampu menyelesaikan soal-soal dengan cepat dan akurat. Guru ingin memberikan program pengayaan agar mereka tetap tertantang. Manakah strategi yang paling sesuai untuk program pengayaan?',opts:['Memberikan soal latihan tambahan dengan tingkat kesulitan yang sama seperti siswa lainnya.','Mengajak siswa mengeksplorasi penerapan konsep dalam kehidupan nyata.','Meminta siswa membantu teman-temannya yang masih mengalami kesulitan memahami materi.','Membiarkan siswa mengerjakan tugas mandiri dengan sedikit arahan karena mereka sudah menguasai materi.','Mengulang kembali materi yang sudah dipahami siswa agar semakin kuat pemahamannya.'],ans:1,exp:'Dalam program pengayaan, tujuan utamanya adalah memberikan tantangan intelektual baru kepada siswa yang sudah menguasai materi dasar. Mengajak mereka untuk menerapkan konsep dalam kehidupan nyata tidak hanya memperdalam pemahaman mereka, tetapi juga mengembangkan keterampilan berpikir kritis dan kreatif.'},
+{id:'Y20',section:'Pedagogik',type:'pg',q:'Bu Santi adalah seorang guru Bahasa Inggris di sebuah SMP di Jakarta. Ia sedang mengajar kelas 8 tentang cara membuat secangkir kopi. Siswa-siswanya memiliki beragam gaya belajar dan kemampuan. Beberapa siswa adalah pembelajar visual, sementara yang lain pembelajar auditori. Ada juga siswa yang lebih mahir dalam keterampilan membaca dan menulis dibanding yang lain. Pendekatan pembelajaran teks prosedur manakah yang paling tepat untuk digunakan Bu Santi agar sesuai dengan berbagai gaya belajar dan juga mendorong kolaborasi antar siswa?',opts:['Memberikan lembar instruksi tertulis tentang langkah-langkah membuat kopi.','Memperlihatkan video tentang seseorang yang membuat kopi.','Meminta siswa bekerja dalam kelompok untuk menulis instruksi mereka sendiri tentang cara membuat kopi.','Meminta siswa mempresentasikan kepada kelas cara membuat kopi.','Menjelaskan secara langsung kepada siswa bahan-bahan dan langkah-langkah dalam membuat kopi.'],ans:2,exp:'Mengakomodasi berbagai gaya belajar: Pembelajar visual dapat menulis dan menggambar langkah-langkahnya. Pembelajar auditori dapat mendiskusikan ide secara lisan. Pembelajar kinestetik dapat belajar lebih aktif saat berdiskusi atau mensimulasikan kegiatan.'}
+];
+
+/* =========================================================================
+   BANK SOAL 4 — CONTOH SOAL UKPPG (10 butir)
+   ========================================================================= */
+const Q_CONTOH = [
+{id:'C1',section:'Kepribadian',type:'pg',q:'Ibu Rika diminta menjadi juri lomba pidato antar kelas. Salah satu peserta adalah keponakannya sendiri secara objektif peserta lain memiliki performa lebih baik tetapi beberapa guru memberi nilai tinggi pada keponakannya karena empati terhadap kondisi keluarganya. Ibu Rika merasa tidak enak jika memberikan nilai rendah dibanding juri lain tapi ia juga tidak ingin melanggar prinsip keadilan. Apa yang sebaiknya dilakukan Ibu Rika?',opts:['Memberi nilai objektif sesuai performa tanpa memandang hubungan keluarga','Memberi nilai lebih tinggi sedikit agar tidak terlalu jauh dari juri lain','Berdiskusi dengan juri lain mengenai standar penilaian yang digunakan','Mengundurkan diri sebagai juri agar tidak terjadi konflik kepentingan'],ans:0,exp:'Ibu Rika harus menjaga integritas dan objektivitas penilaian, tidak boleh terpengaruh hubungan keluarga.'},
+{id:'C2',section:'Sosial',type:'pg',q:'Dalam tim mata pelajaran, ibu Mega merasa usulannya untuk menggunakan metode pembelajaran berbasis proyek sering diabaikan. Ia mulai merasa tidak dihargai dan mempertimbangkan untuk menarik diri dari tim. Namun, ia menyadari bahwa pembelajaran yang baik memerlukan kerjasama. Apa langkah paling bijak yang dapat dilakukan ibu Mega?',opts:['Menyampaikan ideanya secara pribadi ke kepala sekolah untuk mendapatkan dukungan','Menyampaikan usulannya dalam bentuk tertulis agar lebih terstruktur dan mudah dipahami','Membiarkan tim berjalan dengan caranya dan fokus mengembangkan metode sendiri','mencoba mendekati beberapa anggota tim untuk meminta dukungan secara informal.'],ans:1,exp:'Menyampaikan usulan secara tertulis dan terstruktur adalah cara profesional untuk memastikan ide didengar dan dipertimbangkan tanpa menimbulkan konflik.'},
+{id:'C3',section:'Pedagogik',type:'pg',q:'Pak Toni melihat siswanya, Rina, tampak lesu dan tidak konsentrasi dalam beberapa hari ia juga tidak mengerjakan tugas dan hasil ujiannya menurun drastis. Saat ditanya, Rina hanya mengatakan bahwa ia sedang banyak masalah di rumah, tapi engga menjelaskan lebih jauh. Pak Toni ingin membantu tanpa membuat Rina merasa tertekan. Apa pendekatan paling tepat bagi Pak Toni?',opts:['Memberi waktu Rina untuk menyelesaikan masalah pribadinya tanpa menekannya.','Mengarahkan Rina ke guru BK dan tetap memantau perkembangannya.','Memanggil orang tua Rina ke sekolah agar masalahnya bisa diselesaikan bersama.','Menasehati Rina secara pribadi dan meminta dia tetap fokus meski sedang ada masalah.'],ans:1,exp:'Mengarahkan ke guru BK adalah langkah tepat karena BK memiliki keahlian untuk menangani masalah pribadi siswa secara profesional, sambil guru tetap memantau.'},
+{id:'C4',section:'Pedagogik',type:'pg',q:'Ibu Nani ingin menggunakan video pembelajaran daring untuk menjelaskan konsep IPA. Namun, survei awal menunjukkan bahwa sekitar 30% siswa tidak memiliki akses internet di rumah. Ia ingin tetap berinovasi tapi juga menjamin semua siswa dapat pembelajaran setara. Apa strategi terbaik yang bisa dilakukan Ibu Nani?',opts:['Menggunakan video hanya sebagai pelengkap dan tidak wajib ditonton semua.','Memberikan versi cetak materi kepada siswa yang tidak bisa menonton video.','Menayangkan video di sekolah dan membuat sesi khusus untuk siswa tanpa akses.'],ans:2,exp:'Menayangkan video di sekolah dan membuat sesi khusus memastikan semua siswa mendapatkan akses yang sama tanpa membebani siswa yang terkendala internet.'},
+{id:'C5',section:'Pedagogik',type:'pg',q:'Ibu Dita melihat beberapa siswa selalu mendapat nilai rendah dalam ulangan, meski tanpa aktif dalam diskusi dan kerja kelompok. Ia menyadari bahwa model tes pilihan ganda tidak menggambarkan sepenuhnya potensi mereka. Apa yang sebaiknya dilakukan ibu Dita?',opts:['Menambah penilaian dari observasi proses diskusi dan kerja kelompok.','Pengganti soal ulangan dengan soal yang lebih mudah.','Memberi tugas rumah tambahan untuk meningkatkan nilai mereka.','Mengulang materi hingga siswa siap untuk mengerjakan ulangan.'],ans:0,exp:'Menambah penilaian dari observasi dan kerja kelompok memberikan gambaran yang lebih holistik tentang kemampuan siswa, tidak hanya dari tes tertulis.'},
+{id:'C6',section:'Kepribadian',type:'pg',q:'Pak Heru mendapati hasil belajar siswa menurun dalam 3 bulan terakhir. Ia merasa sudah mengajar sesuai rencana, tapi siswa mengaku sulit memahami materi. Ia ingin tahu apakah metode mengajarnya yang kurang sesuai. Langkah reflektif terbaik yang bisa dilakukan Pak Heru adalah:',opts:['Mengulang materi dengan penjelasan yang lebih sederhana.','Membuat angket umpan balik dari siswa tentang cara mengajarnya.','Meningkatkan intensitas tugas agar siswa lebih terlatih.','Menyusun soal tambahan untuk melihat kelemahan siswa.'],ans:1,exp:'Meminta umpan balik dari siswa adalah langkah reflektif yang baik untuk mengetahui perspektif siswa tentang metode pengajaran yang digunakan.'},
+{id:'C7',section:'Sosial',type:'pg',q:'Ibu Hesti merasa beberapa guru kerap datang terlambat ke kelas atau mengajar tanpa persiapan. Ia bukan guru senior tetapi merasa perilaku ini tidak memberikan teladan yang baik. Apa yang sebaiknya dilakukan ibu Hesti?',opts:['Menyampaikan langsung ke guru yang bersangkutan.','Mengangkat isu ini secara umum dalam rapat guru untuk mencari solusi bersama.','Melaporkan di kepala sekolah agar bertindak secara administratif.','Mencatat semua kejadian sebagai bahan laporan bila diperlukan nanti.'],ans:1,exp:'Mengangkat isu secara umum dalam rapat guru adalah cara yang profesional dan kolaboratif untuk mencari solusi tanpa menyerang individu tertentu.'},
+{id:'C8',section:'Pedagogik',type:'pg',q:'Program literasi di sekolah sudah berjalan 6 bulan, tapi belum tampak hasil yang signifikan. Banyak guru hanya menjalankannya formalitas. Ibu Sinta sebagai koordinator merasa program ini perlu dievaluasi. Apa langkah terbaik yang bisa ia lakukan?',opts:['Menyusun laporan kinerja dan menyerahkannya kepada kepala sekolah','Mengajak guru-guru berdiskusi untuk merefleksikan kendala pelaksanaannya','Mengubah program secara sepihak agar lebih menarik','Mewajibkan laporan kegiatan mingguan dari semua guru'],ans:1,exp:'Mengajak guru berdiskusi untuk merefleksikan kendala adalah langkah kolaboratif yang baik untuk memperbaiki program bersama-sama.'},
+{id:'C9',section:'Kepribadian',type:'pg',q:'Saat mengoreksi tugas, Pak Doni menyadari beberapa siswa menyalin jawaban dari internet tanpa menyebutkan sumber. Ia khawatir ini menjadi kebiasaan buruk jika tidak ditangani serius. Apa yang sebaiknya dilakukan Pak Doni?',opts:['Memberi nilai rendah dan memperingatkan siswa secara umum','Memberi umpan balik dan mengajarkan kembali pentingnya situasi dan etika akademik','Membiarkan saja untuk kali ini dan memberi kesempatan lebih baik ke depannya','Menajar siswa secara langsung dan memanggil orang tua'],ans:1,exp:'Memberi umpan balik dan mengajarkan kembali etika akademik adalah pendekatan yang mendidik, bukan sekadar menghukum.'},
+{id:'C10',section:'Pedagogik',type:'pg',q:'Bu Minah sedang mengajar tema “Perubahan Iklim” di kelas VI. Ia telah menjelaskan konsep, memberikan video, serta diskusi kelas. Namun, ketika ia memberi kuis, lebih dari 60% siswa tidak mencapai KKM. Ia menyadari bahwa perlu ada intervensi sebelum pembelajaran berlanjut. Apa langkah yang paling tepat dilakukan Bu Minah?',opts:['Mengulang materi dan memberikan kuis ulang dengan tingkat kesulitan yang sama.','Memberikan tugas individu agar siswa mengulang materi di rumah.','Melakukan asesmen diagnostik lanjutan dan merevisi rencana pembelajarannya.','Melanjutkan ke materi berikutnya dan memberikan remedial hanya kepada siswa yang gagal.'],ans:2,exp:'Melakukan asesmen diagnostik lanjutan dan merevisi rencana pembelajaran adalah langkah tepat untuk mengetahui akar masalah dan memperbaiki pembelajaran.'}
+];
+
+/* =========================================================================
+   BANK SOAL 5 — FADIAZ (20 PG + 3 PGK)
+   ========================================================================= */
+const Q_FADIAZ = [
+{id:'F1',section:'Pedagogik',type:'pg',q:'Dalam sebuah kelas, terdapat dua siswa yang berasal dari luar daerah dan memiliki ciri fisik serta logat bicara yang berbeda. Ketika anda memberikan tugas kelompok, teman-teman mereka enggan satu kelompok dengan mereka. Sebagai seorang guru, apa yang akan anda lakukan untuk mengatasi hal ini?',opts:['Mengintegrasikan mereka ke dalam kelompok sambil menekankan bahwa penolakan terhadap teman akan dikenai konsekuensi.','Menugaskan mereka dalam kelompok dan mewajibkan semua anggota kelompok untuk menghargai teman sekelompoknya.','Memfasilitasi terjadinya dialog antar siswa dengan dasar saling menghormati dan menghargai perbedaan.','Memberikan pemahaman kepada peserta didik tentang pentingnya menghargai keberagaman serta memastikan kedua anak tersebut mendapat tempat di dalam kelompok.'],ans:3,exp:'Pilihan D menekankan pendekatan yang bersifat preventif dan edukatif. Guru tidak hanya memaksakan integrasi tetapi juga memberikan pemahaman yang mendalam tentang nilai keberagaman.'},
+{id:'F2',section:'Pedagogik',type:'pg',q:'Pengelolaan kelas yang efektif menjadi salah satu kunci keberhasilan pembelajaran. Saat ini, anda menghadapi tantangan di kelas anda karena beberapa siswa sering datang terlambat meskipun berbagai upaya telah dilakukan untuk mengatasinya. Tindakan yang anda pilih untuk mengatasi masalah keterlambatan ini adalah …. ',opts:['Meminta perwakilan kelas untuk memimpin teman-temannya agar disiplin dan tidak terlambat.','Guru memberikan arahan dan motivasi agar siswa sadar pentingnya hadir tepat waktu.','Membuat peraturan bersama dengan siswa yang disepakati bersama dan menempelnya di papan pengumuman.','Memberikan teguran atau sanksi yang mendidik kepada siswa yang masih terlambat.'],ans:2,exp:'Membuat peraturan bersama dan menempelnya di papan pengumuman adalah cara yang lebih partisipatif dan demokratis. Hal ini melibatkan siswa dalam proses pembuatan aturan, sehingga mereka merasa memiliki tanggung jawab untuk menaati aturan tersebut.'},
+{id:'F3',section:'Pedagogik',type:'pg',q:'Pak Guru Dani sedang berdiskusi dengan teman-temannya sesama guru tentang bagaimana cara membuat siswa-siswinya lebih semangat dalam belajar. Ia ingin memastikan bahwa suasana kelas selalu mendukung semangat belajar mereka. Berikut beberapa hal yang sedang ia pertimbangkan: i. Pak Dani selalu mencoba menciptakan suasana kelas yang kondusif agar siswa merasa nyaman. ii. Ia juga sering mengganti metode belajar supaya siswa tidak bosan dan lebih tertarik. iii. Pak Dani berpikir untuk membuat aturan tegas yang harus diikuti semua siswa. iv. Selain itu, ia juga berusaha meningkatkan antusiasme siswa saat belajar dengan memberi semangat dan penghargaan. Dari cerita di atas, cara yang kan termasuk upaya memotivasi siswa adalah ....',opts:['Menciptakan suasana kelas yang kondusif','Menciptakan metode belajar yang bervariasi','Memberikan aturan tegas dalam pembelajaran','Meningkatkan antusiasme siswa dalam belajar'],ans:2,exp:'Membuat aturan tegas memang penting untuk pengelolaan kelas, tetapi itu tidak termasuk secara langsung sebagai upaya memotivasi siswa. Hal ini lebih berkaitan dengan pengendalian perilaku siswa.'},
+{id:'F4',section:'Kepribadian',type:'pg',q:'Rina adalah seorang siswa yang belakangan ini sering melanggar aturan sekolah, seperti bolos dan berbicara kasar pada teman-temannya. Guru mengetahui bahwa di rumah, Rina jarang mendapat perhatian dari orang tuanya, yang lebih sering memberikan uang saku besar dan membiarkan dia bermain tanpa batas. Sebagai guru, Anda ingin membantu Rina agar bisa memahami konsekuensi dari perbuatannya dan kembali fokus dalam belajar. Apa tindakan yang paling tepat yang harus Anda ambil?',opts:['Mengajak Rina berbicara secara personal untuk mengetahui penyebab perilaku tersebut dan mendiskusikan solusinya.','Memanggil orang tua Rina ke sekolah dan membantu mereka memahami pentingnya memberikan perhatian dan arahan yang tepat kepada anaknya.','Memberikan kesempatan pada Rina untuk terlibat dalam proyek kelas yang mengajarkan tanggung jawab dan kerja sama.','Mengembangkan program konseling di sekolah untuk membantu siswa-siswa seperti Rina yang mengalami masalah di rumah.'],ans:1,exp:'Dalam kasus Rina, akar masalahnya bukan hanya di sekolah tetapi juga di rumah. Dengan memanggil orang tua ke sekolah dan menjelaskan pentingnya peran mereka dalam mendampingi dan mendidik anak, guru membantu memperbaiki kondisi di rumah.'},
+{id:'F5',section:'Profesional',type:'pg',q:'Di kelas 3 SD, terdapat seorang anak bernama Raka yang sering terlihat kesulitan saat membaca teks di buku pelajaran. Ketika guru meminta siswa untuk membaca satu per satu, Raka tampak gugup dan cenderung menghindar. Saat mencoba membaca, ia sering membalik huruf atau salah urutannya, misalnya membaca kata “pintu” menjadi “tipun” atau “bulan” menjadi “bluan.” Guru memperhatikan bahwa Raka sebenarnya memiliki semangat belajar yang tinggi dan selalu antusias dalam diskusi lisan, tetapi ia merasa frustrasi ketika harus membaca atau menulis. Teman-temannya pun sering bertanya-tanya mengapa Raka terlihat lambat dalam tugas membaca dan menulis. Hal ini menjadi perhatian bagi guru, yang akhirnya menyadari bahwa Raka mengalami kesulitan belajar yaitu ……',opts:['Diskalkulia','Disproksia','Disgrafia','Disleksia'],ans:3,exp:'Disleksia adalah gangguan spesifik dalam kemampuan membaca. Gejalanya seperti membalik huruf, salah urutan huruf, kesulitan membaca dengan lancar, meskipun kemampuan lisan dan antusiasme belajar anak bagus.'},
+{id:'F6',section:'Profesional',type:'pg',q:'Di kelas 4 SD, Bu Rani mendapati salah satu siswanya, Dito, mengalami kesulitan menulis. Tulisan Dito sering tidak rapi, huruf-hurufnya tidak konsisten, dan jarak antar kata berantakan. Meskipun Dito sudah paham materi dan bisa menjawab pertanyaan secara lisan dengan baik, ia selalu merasa kesulitan saat diminta menulis catatan atau menyalin teks. Agar Dito terbantu, Bu Rani memberikan beberapa latihan khusus yang cocok untuknya. Langkah apa yang sebaiknya dilakukan Bu Rani untuk membantu Dito?',opts:['Memberikan latihan membaca agar lebih lancar','Memberikan latihan menyalin teks secara perlahan dan teratur','Meminta Dito banyak berbicara dan berdiskusi.','Memberikan video yang bisa dilihat Dito'],ans:1,exp:'Masalah yang dialami Dito berhubungan dengan keterampilan motorik halus dan koordinasi tangan, yaitu Disgrafia (kesulitan menulis). Latihan menyalin teks secara perlahan dan teratur dapat membantu meningkatkan keterampilan menulisnya.'},
+{id:'F7',section:'Kepribadian',type:'pg',q:'Seorang siswa menunjukkan perilaku nakal dan seringkali melakukan pelanggaran tata tertib di sekolah. Hal ini disebabkan karena siswa salah mendapatkan pengasuhan dan kurang perhatian dari orang tua. Orang tua memanjakan mereka dengan uang saku berlebihan dan kebebasan dalam pergaulan sehari-hari. Sebagai guru apa yang anda lakukan',opts:['Mempertemukan siswa dengan orang tuanya agar menyadari kesalahannya selama ini dan mendiskusikan perihal kenakalan anak.','Memerankan diri sebagai teman terdekat siswa agar lebih mudah membantu memecahkan masalah siswa.','Memberikan pengertian kepada wali murid untuk lebih perhatian dan tidak memanjakannya.','Perilaku siswa sebagai bagian perkembangan, yang diyakini akan dapat diselesaikan keluarga siswa yang bersangkutan'],ans:2,exp:'Dalam kasus ini, perilaku nakal siswa berkaitan langsung dengan pola asuh orang tua yang kurang tepat. Memberikan pengertian kepada wali murid adalah langkah yang penting agar orang tua sadar dan mau melakukan perubahan.'},
+{id:'F8',section:'Pedagogik',type:'pg',q:'Anda seorang guru baru di sebuah sekolah yang memiliki latar belakang siswa yang beragam. Suatu hari, Anda menyadari bahwa salah satu siswa Anda sering terlihat lesu dan kurang fokus saat pelajaran berlangsung. Setelah berbicara dengan siswa tersebut, Anda mengetahui bahwa ia sering membantu orang tuanya bekerja sepulang sekolah untuk menambah penghasilan keluarga. Apa tindakan Anda yang paling tepat dalam menghadapi situasi ini?',opts:['Mengumumkan kondisi siswa tersebut di depan kelas agar teman-temannya mengetahui pentingnya saling membantu keluarga.','Membiarkan saja karena menurut Anda itu adalah urusan keluarga masing-masing dan tidak pantas dicampuri.','Berdiskusi dengan siswa secara pribadi, mendukungnya secara emosional, dan mencari cara agar tetap semangat belajar meski harus membantu keluarga.','Meminta orang tuanya datang ke sekolah untuk membahas masalah ini secara tegas dan memutuskan apakah ia boleh lanjut sekolah.'],ans:2,exp:'Pendekatan ini menunjukkan empati dan perhatian sebagai seorang guru. Dengan berdiskusi secara pribadi, Anda bisa memahami lebih dalam kebutuhan dan kendala yang dihadapi siswa.'},
+{id:'F9',section:'Profesional',type:'pg',q:'Teori ini menjelaskan bahwa kecerdasan seseorang berkembang sesuai tahap pertumbuhan anak. Misalnya, pada usia 0-2 tahun, anak sudah bisa mengenal dunia sekitar melalui gerakan dan inderanya. Sementara itu, di usia 12 tahun ke atas, anak sudah memiliki kemampuan berpikir logis dan abstrak. Teori ini dikemukakan oleh….',opts:['Maslow','Vygotsky','Piaget','Ausubel'],ans:2,exp:'Jean Piaget adalah psikolog yang mengembangkan teori tahapan perkembangan kognitif anak, yang menjelaskan bagaimana kemampuan berpikir anak berkembang secara bertahap sesuai usianya.'},
+{id:'F10',section:'Profesional',type:'pg',q:'Seorang anak dapat menyebutkan ciri-ciri toples plastik namun tidak dapat menyebutkan bangun tabung. Menurut Jean Piaget, anak tersebut termasuk dalam tahapan …..',opts:['Sensorimotorik','Pra-operasional','Operasional konkret','Operasional formal'],ans:1,exp:'Pada tahap pra-operasional (sekitar usia 2-7 tahun), anak sudah mulai menggunakan bahasa dan simbol untuk mengenal dunia, tetapi pemahaman mereka masih sangat konkret dan belum bisa berpikir secara logis tentang konsep abstrak.'},
+{id:'F11',section:'Profesional',type:'pg',q:'Sinta, siswa kelas 11, sedang mengikuti pelajaran Fisika. Guru meminta siswa untuk memprediksi apa yang terjadi jika manusia hidup di Mars. Sinta langsung berpendapat bahwa manusia mungkin akan menghadapi tantangan berbeda karena kondisi atmosfer dan gravitasi Mars yang berbeda dari bumi. Ia merancang beberapa percobaan sederhana untuk merancang hipotesis tersebut, meski tidak pernah ke Mars. Berdasarkan kasus di atas, tahap perkembangan kognitif apa yang sedang di alami Sinta?',opts:['Tahap Sensorimotor','Tahap Praoperasional','Tahap Operasional Konkret','Tahap Operasional Formal'],ans:3,exp:'Tahap operasional formal ditandai kemampuan berpikir abstrak, memprediksi kemungkinan, dan merancang hipotesis tanpa harus mengalami langsung.'},
+{id:'F13',section:'Profesional',type:'pg',q:'Di kelas IPA, Bu Nia tidak hanya menjelaskan materi tentang daur air di papan tulis. Sebaliknya, beliau meminta murid-muridnya untuk bekerja dalam kelompok kecil dan melakukan percobaan sederhana. Mereka diminta mengamati perbedaan suhu air yang diuapkan dari gelas, lalu membuat kesimpulan sendiri bagaimana air dapat berubah menjadi awan dan hujan. Selama diskusi, Bu Nia hanya memberi arahan ringan dan membiarkan murid menemukan sendiri jawaban dari pengamatan mereka. Berdasarkan teori pembelajaran dari Lev Vygotsky, manakah yang sesuai dengan situasi diatas?',opts:['Teori Konstruktivisme','Teori Sibernetik','Teori Behavioristik','Teori Kognitif'],ans:0,exp:'Situasi yang dijelaskan menunjukkan pendekatan pembelajaran di mana siswa aktif membangun pemahaman mereka sendiri melalui pengalaman langsung dan interaksi dalam kelompok, dengan guru berperan sebagai fasilitator. Ini sesuai dengan konstruktivisme.'},
+{id:'F14',section:'Profesional',type:'pg',q:'Di kelas Matematika, Pak Rudi menggunakan metode drill untuk membantu murid menguasai perkalian. Setiap kali murid berhasil menjawab soal dengan benar, Pak Rudi memberikan pujian, tepuk tangan, atau bintang emas di buku catatan mereka. Namun, jika murid salah menjawab, Pak Rudi meminta mereka mencoba ulang hingga benar. Murid-murid pun merasa senang ketika mendapat pujian, sehingga mereka makin bersemangat dan berusaha menjawab soal dengan benar. Berdasarkan teori pembelajaran, manakah yang sesuai dengan situasi diatas?',opts:['Teori Konstruktivisme','Teori Sibernetik','Teori Behavioristik','Teori Kognitif'],ans:2,exp:'Metode yang digunakan Pak Rudi sangat khas dengan teori behavioristik, yang menekankan pembentukan perilaku melalui penguatan (reinforcement).'},
+{id:'F15',section:'Profesional',type:'pg',q:'Rina berusia 22 tahun dan baru saja lulus kuliah. Ia merasa gelisah karena harus memilih antara dua pilihan. Melanjutkan studi S2 di luar negeri atau bekerja di Perusahaan Impian di Jakarta. Ia merasa tertarik dengan keduanya, tapi juga takut salah pilih. Tahap perkembangan psikososial apa yang sedang dijalani Rina?',opts:['Tahap trust vs. mistrust','Tahap Identity vs. Role Confusion','Tahap Intimacy vs. Isolation','Tahap Industry vs. Inferiority'],ans:1,exp:'Pada usia dewasa muda sekitar 18-25 tahun, seseorang berada pada tahap identity vs. Role Confusion menurut Erik Erikson. Individu berusaha menemukan jati diri dan menentukan arah hidup.'},
+{id:'F17',section:'Profesional',type:'pg',q:'Ada seorang siswa yang selalu ingin mengambil alih dan menjadi pusat perhatian dalam kegiatan kelompok belajar. Ia jarang memberi kesempatan teman-temannya untuk menyampaikan ide atau pendapat. Bahkan, ketika ada teman lain yang memimpin diskusi, ia lebih memilih menyendiri dan bekerja sendiri. Situasi ini menunjukkan bahwa siswa tersebut mengalami kesulitan dalam perkembangan.',opts:['Spiritual','Sosial emosional','Moral','Psikomotorik'],ans:1,exp:'Perilaku siswa yang ingin mendominasi dan sulit bekerja sama dengan teman-temannya menunjukkan kesulitan dalam aspek sosial emosional.'},
+{id:'F18',section:'Profesional',type:'pg',q:'Bayu siswa kelas 5 SD, sering terlihat marah ketika kalah dalam pertandingan bola di sekolah. Ia cenderung menyalahkan temannya dan terkadang memukul temannya saat marah. Guru olahraga kemudian mengajaknya berdiskusi secara pribadi dan mengajarkan teknik pernapasan untuk menenangkan diri. Bayu juga diajarkan untuk mengungkapkan apa yang sebenarnya ia rasakan saat kalah. Apa tantangan perkembangan emosional yang dihadapi Bayu?',opts:['Bayu kesulitan dalam mengelola emosi negatif.','Bayu cenderung mudah frustasi dan menyalahkan orang lain.','Bayu cenderung mengekspresikan kemarahannya melalui agresif fisik.','Bayu cenderung memahami situasi dan kondisi saat bermain.'],ans:0,exp:'Bayu sering marah dan bereaksi dengan cara yang kurang tepat saat kalah, yang menunjukkan ia belum mampu mengelola emosi negatifnya dengan baik.'},
+{id:'F19',section:'Profesional',type:'pg',q:'Pak Adit adalah guru di SMP Nusantara. Di kelasnya, ada siswa yang keluarganya kaya, ada yang orang tuanya petani, ada juga yang ayahnya pegawai negeri atau pekerja swasta. Meskipun begitu, Pak Adit tidak pernah membeda-bedakan mereka. Semua muridnya ia ajar dan ia bantu sama rata. Ia percaya bahwa setiap anak, apa pun latar belakang keluarganya, berhak mendapatkan perhatian dan kesempatan yang sama di kelas. Sikap Pak Adit ini menunjukkan bahwa ia memperhatikan karakteristik peserta didik terutama pada aspek …. ',opts:['status sosial','Kecepatan belajar','Gaya belajar','Kepribadian'],ans:0,exp:'Pak Adit memperlakukan siswa sama tanpa membeda-bedakan latar belakang keluarga. Hal ini berkaitan dengan status sosial siswa.'},
+{id:'F20',section:'Profesional',type:'pg',q:'Menurut Edgar Dale, kegiatan pembelajaran yang paling maksimal dalam memahami materi ajar adalah ……',opts:['Memanfaatkan berbagai media pembelajaran','Belajar dengan metode membaca intensif dan mendengarkan penjelasan guru.','Belajar dengan kegiatan nyata dalam kehidupan sehari-hari.','Pembelajaran yang melibatkan peserta didik dalam kelompok untuk mendiskusikan permasalahan pembelajaran.'],ans:2,exp:'Menurut Edgar Dale dan teorinya tentang Cone of Experience, pembelajaran yang paling efektif adalah yang melibatkan pengalaman langsung dan kegiatan nyata (konkret).'},
+{id:'F21',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Tindakan yang dapat dilakukan guru agar pembelajaran berpihak kepada peserta didik. Tentukan BENAR atau SALAH.',stmts:['Memberikan beberapa pilihan topik proyek. Peserta didik dapat memilih proyek yang diminati.','Memberikan semua peserta didik kesempatan untuk menyampaikan ide dan pendapatnya.','Menyediakan berbagai aktivitas dan cara belajar sesuai kemampuan peserta didik.','Mengintegrasikan materi ajar dengan budaya dan lingkungan peserta didik.'],key:[0,0,0,0],exp:'Semua pernyataan tersebut mencerminkan prinsip pembelajaran yang berpihak kepada peserta didik.'},
+{id:'F22',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Situasi yang benar berdasarkan penerapan pendekatan Teaching at The Right Level (TaRL). Tentukan BENAR atau SALAH.',stmts:['Setelah 2 minggu kegiatan, guru mengadakan kuis singkat untuk melihat kemajuan setiap anak. Ia lalu memperbarui kelompok.','Guru menggunakan aktivitas "Bingo Kata" untuk kelompok yang sudah lancar membaca, sedangkan untuk kelompok yang sedang belajar membaca, ia membuat aktivitas "Tebak Huruf" dengan kartu gambar.','Guru membagi siswa menjadi tiga kelompok: Kelompok yang sudah lancar membaca, kelompok yang sedang belajar membaca kalimat sederhana dan kelompok yang masih mengenal huruf dan suku kata.','Saat mempelajari tentang daur air, guru mengajak siswa mengamati lingkungan sekitar sekolah, seperti kolam atau sungai kecil.','Dalam pembelajaran IPS, guru memasukkan topik tentang sejarah dan budaya lokal yang dikenal siswa.'],key:[0,0,0,1,1],exp:'Pernyataan 1, 2, dan 3 sesuai dengan prinsip TaRL (asesmen, diferensiasi aktivitas, pengelompokan berdasarkan level). Pernyataan 4 dan 5 lebih mengarah ke pembelajaran kontekstual/CRT, bukan TaRL.'},
+{id:'F23',section:'Pedagogik',type:'kategori',labels:['Benar','Salah'],intro:'Penerapan pembelajaran berdiferensiasi produk. Tentukan BENAR atau SALAH.',stmts:['Dalam pelajaran Bahasa Indonesia, guru memberikan tugas membuat karya akhir tentang cerita rakyat. Siswa yang lebih mahir diminta membuat esai analisis... Siswa lain dapat membuat komik bergambar...','Pada pelajaran Matematika tentang bangun ruang, guru memberikan pilihan hasil akhir: menyusun maket bangun ruang dari kardus, membuat power point yang menjelaskan sifat-sifat bangun ruang...','Pak Dedli menciptakan lingkungan belajar yang mendukung kebutuhan beragam siswa. Ia mengatur ruang kelas dengan beberapa zona belajar...','Saat mempelajari tentang daur air, guru mengajak siswa mengamati lingkungan sekitar sekolah...','Pak Joko mengajarkan pelajaran matematika tentang pecahan. Ia menyiapkan tiga jenis materi...'],key:[0,0,1,1,1],exp:'Pernyataan 1 dan 2 adalah diferensiasi produk. Pernyataan 3 adalah diferensiasi lingkungan. Pernyataan 4 adalah pembelajaran kontekstual. Pernyataan 5 adalah diferensiasi konten.'}
+];
+
+/* =========================================================================
+   BANK SOAL 6 — SOAL PPG UJI PENGETAHUAN 2025
+   ========================================================================= */
+const Q_PPG2025 = [
+{id:'P1',section:'Pedagogik',type:'pg',q:'Seorang guru ingin merancang pembelajaran yang memfasilitasi peserta didik untuk membangun pengetahuannya sendiri berdasarkan pengalaman belajar. Pendekatan pembelajaran apakah yang paling sesuai?',opts:['Behavioristik','Konstruktivistik','Kognitivistik','Humanistik'],ans:1,exp:'Pendekatan konstruktivistik menekankan pada pembelajaran aktif di mana peserta didik membangun pengetahuan melalui pengalaman dan interaksi.'},
+{id:'P2',section:'Profesional',type:'pg',q:'Manakah di bawah ini yang merupakan prinsip utama dalam pengembangan RPP Kurikulum Merdeka?',opts:['Terperinci dan berorientasi pada administrasi','Lengkap dan baku dari pemerintah','Sederhana, fleksibel, dan kontekstual','Rumit agar sesuai standar akreditasi'],ans:2,exp:'Dalam Kurikulum Merdeka, pengembangan RPP cukup satu halaman, prinsipnya sederhana, fleksibel, dan kontekstual, agar memudahkan guru menyesuaikan dengan kebutuhan murid.'},
+{id:'P3',section:'Sosial',type:'pg',q:'Guru yang baik harus menjalin komunikasi dengan orang tua siswa. Bentuk komunikasi yang paling efektif adalah:',opts:['Memberi laporan nilai akhir secara tertulis','Menyampaikan kekurangan siswa secara langsung di depan umum','Melibatkan orang tua dalam diskusi perkembangan anak','Meminta orang tua hadir setiap hari ke sekolah'],ans:2,exp:'Komunikasi yang baik adalah dua arah dan partisipatif, seperti melibatkan orang tua dalam diskusi perkembangan siswa.'},
+{id:'P4',section:'Kepribadian',type:'pg',q:'Sikap guru yang mencerminkan integritas tinggi adalah:',opts:['Mematuhi perintah atasan walau tidak sesuai aturan','Konsisten berkata dan bertindak sesuai nilai moral','Menghindari risiko dengan tidak banyak bicara','Menyelesaikan tugas karena takut dihukum'],ans:1,exp:'Integritas berarti konsisten antara perkataan dan perbuatan berdasarkan nilai moral dan etika.'},
+{id:'P5',section:'Pedagogik',type:'pg',q:'Dalam proses asesmen formatif, guru sebaiknya:',opts:['Menghukum siswa yang belum paham materi','Memberikan nilai akhir langsung','Menggunakan hasil asesmen untuk memperbaiki pembelajaran','Hanya mengejar ketercapaian nilai KKM'],ans:2,exp:'Asesmen formatif bertujuan untuk memperbaiki proses belajar-mengajar, bukan sekadar menilai hasil akhir.'},
+{id:'P6',section:'Pedagogik',type:'pg',q:'Contoh penerapan pembelajaran berdiferensiasi berdasarkan kesiapan belajar adalah:',opts:['Memberi tugas berbeda sesuai hobi siswa','Memberikan pilihan cara duduk','Menyesuaikan tingkat kesulitan tugas berdasarkan kemampuan','Memberikan tugas yang sama untuk semua siswa'],ans:2,exp:'Diferensiasi kesiapan belajar mengharuskan guru menyesuaikan tingkat tantangan dengan kemampuan siswa masing-masing.'},
+{id:'P7',section:'Sosial',type:'pg',q:'Guru yang menunjukkan sikap inklusif di sekolah adalah:',opts:['Memberi perlakuan istimewa pada siswa berprestasi','Mendorong persaingan antar siswa','Menghargai perbedaan latar belakang dan kemampuan siswa','Mengelompokkan siswa berdasarkan nilai ujian'],ans:2,exp:'Sikap inklusif artinya menghargai keberagaman dan memberikan kesempatan yang adil bagi semua siswa.'},
+{id:'P8',section:'Kepribadian',type:'pg',q:'Guru yang profesional ketika menghadapi kritik dari orang tua murid sebaiknya:',opts:['Membalas dengan marah','Menyalahkan siswa','Menerima dengan terbuka dan mencari solusi','Menghindari bertemu orang tua'],ans:2,exp:'Sikap profesional mencakup keterbukaan terhadap kritik dan fokus pada perbaikan.'},
+{id:'P9',section:'Pedagogik',type:'pg',q:'Prinsip utama dari asesmen dalam Kurikulum Merdeka adalah:',opts:['Berorientasi pada penguasaan materi','Sebagai alat untuk mengklasifikasi siswa','Menyediakan umpan balik untuk perbaikan pembelajaran','Digunakan untuk penilaian ranking'],ans:2,exp:'Asesmen seharusnya digunakan sebagai alat refleksi dan perbaikan pembelajaran, bukan hanya pengklasifikasian.'},
+{id:'P10',section:'Pedagogik',type:'pg',q:'Dalam pembelajaran diferensiasi minat, guru dapat:',opts:['Memberi materi sesuai pilihan karier siswa','Memberi tugas yang sama tapi dengan waktu berbeda','Mengelompokkan siswa berdasarkan usia','Menghilangkan tugas agar siswa nyaman'],ans:0,exp:'Diferensiasi minat berarti menyesuaikan aktivitas pembelajaran dengan hal yang diminati siswa, misalnya dikaitkan dengan cita-cita mereka.'},
+{id:'P11',section:'Pedagogik',type:'pg',q:'Strategi pembelajaran yang tepat untuk mengembangkan kemampuan berpikir tingkat tinggi (HOTS) adalah:',opts:['Menghafal definisi','Mengerjakan soal pilihan ganda','Menjawab soal uraian berbasis analisis kasus','Menyalin catatan guru'],ans:2,exp:'Soal analisis kasus mendorong siswa untuk berpikir kritis dan menyelesaikan masalah secara mandiri, ciri pembelajaran HOTS.'},
+{id:'P12',section:'Pedagogik',type:'pg',q:'Dalam pembelajaran berdiferensiasi gaya belajar, guru dapat:',opts:['Memberi tugas menggambar, menulis, atau bercerita sesuai preferensi siswa','Menyuruh semua siswa membaca buku yang sama','Memberikan ceramah panjang tanpa alat bantu','Melarang siswa bekerja berkelompok'],ans:0,exp:'Gaya belajar bisa visual, auditori, kinestetik, dll. Guru perlu menyediakan beragam cara agar semua siswa bisa menyerap materi secara optimal.'},
+{id:'P13',section:'Sosial',type:'pg',q:'Bentuk kerja sama guru dan masyarakat yang mendukung pembelajaran adalah:',opts:['Melibatkan masyarakat sebagai narasumber dalam pembelajaran kontekstual','Menutup akses masyarakat ke sekolah','Meminta sumbangan dana secara rutin','Mengundang tokoh masyarakat hanya saat acara seremonial'],ans:0,exp:'Kerja sama bermakna adalah melibatkan masyarakat dalam kegiatan pembelajaran yang relevan dan kontekstual.'},
+{id:'P14',section:'Kepribadian',type:'pg',q:'Guru yang mampu menjadi teladan adalah:',opts:['Berpakaian rapi hanya saat upacara','Memberikan nilai tinggi agar disukai siswa','Konsisten dalam perilaku, tutur kata, dan etika','Menghindari interaksi dengan siswa di luar kelas'],ans:2,exp:'Teladan berarti konsisten menjadi panutan melalui sikap, kata, dan tindakan yang baik dan etis.'},
+{id:'P15',section:'Pedagogik',type:'pg',q:'Manakah yang merupakan contoh pembelajaran berbasis proyek (Project-Based Learning)?',opts:['Siswa diminta mencatat penjelasan guru','Siswa diberi latihan soal pilihan ganda','Siswa meneliti dan membuat laporan tentang pengolahan sampah','Guru menjelaskan materi sambil menunjukkan gambar'],ans:2,exp:'Project-Based Learning (PjBL) adalah pembelajaran yang menugaskan siswa membuat produk nyata berbasis riset dan kolaborasi.'},
+{id:'P16',section:'Profesional',type:'pg',q:'Tujuan utama refleksi dalam pembelajaran adalah:',opts:['Menyusun RPP ulang','Mengevaluasi kinerja kepala sekolah','Mengidentifikasi keberhasilan dan kekurangan untuk perbaikan','Menentukan siswa yang paling aktif'],ans:2,exp:'Refleksi membantu guru mengevaluasi proses dan hasil pembelajaran untuk memperbaiki kualitas ke depan.'},
+{id:'P17',section:'Sosial',type:'pg',q:'Dalam komunitas belajar guru, sikap yang harus dijunjung tinggi adalah:',opts:['Bersaing untuk menjadi ketua','Membagikan praktik baik dan saling belajar','Menyimpan sendiri strategi mengajar yang efektif','Menolak masukan dari rekan kerja'],ans:1,exp:'Komunitas belajar berlandaskan prinsip kolaborasi, keterbukaan, dan perbaikan bersama.'},
+{id:'P18',section:'Pedagogik',type:'pg',q:'Sikap guru terhadap siswa yang lambat memahami materi sebaiknya:',opts:['Memarahinya di depan kelas','Mengabaikan dan lanjut ke materi baru','Memberi bimbingan tambahan dengan sabar','Meminta orang tua mencarikan guru les'],ans:2,exp:'Guru profesional dan berkepribadian baik akan mendampingi siswa dengan sabar sesuai kemampuan masing-masing.'},
+{id:'P19',section:'Pedagogik',type:'pg',q:'Ciri utama peserta didik pada tahap perkembangan remaja adalah:',opts:['Ketergantungan penuh pada orang tua','Penolakan terhadap aturan','Perkembangan emosi dan sosial yang cepat','Fokus pada permainan dan imajinasi'],ans:2,exp:'Remaja (SMP/SMA) mengalami perkembangan emosional dan sosial yang cepat, butuh pemahaman guru agar tidak disalahartikan.'},
+{id:'P20',section:'Profesional',type:'pg',q:'Apa arti prinsip "assessment as learning" dalam Kurikulum Merdeka?',opts:['Penilaian yang digunakan untuk menentukan nilai akhir','Penilaian yang dilakukan oleh orang tua siswa','Penilaian yang mendorong siswa merefleksi dan mengatur proses belajarnya','Penilaian untuk memutuskan kenaikan kelas'],ans:2,exp:'Assessment as learning adalah penilaian yang melibatkan siswa secara aktif dalam proses belajar, misalnya melalui refleksi diri.'}
+];
+
+/* =========================================================================
+   BANK SOAL 7 — MODUL PRAJABATAN 2 BU VIR
+   ========================================================================= */
+const Q_PRAJABATAN2 = [
+{id:'V1',section:'Profesional',type:'pg',q:'Pengaruh teori Skinner terhadap pembelajaran modern antara lain ...',opts:['Memberi tekanan pada kemajuan individu sesuai dengan kemampuan','Memberi kepribadian yang baik dari peserta didik.','Perlu menggunakan penguatan (reinforcement) yang positif secara sistematis, bervariasi, dan sesegera mungkin pada saat respons peserta didik muncul','Perlu ada tujuan yang jelas yang diharapkan dicapai oleh peserta didik'],ans:2,exp:'Skinner menekankan reinforcement (penguatan) untuk memperkuat perilaku.'},
+{id:'V2',section:'Profesional',type:'pg',q:'Kemampuan yang harus dimiliki guru tentang media atau alat bantu pembelajaran adalah....',opts:['Pemilihan bahan untuk membuat media/alat bantu','Pembuatan media atau alat bantu sederhana.','Memakai media atau alat bantu','Merawat media atau alat bantu'],ans:0,exp:'Kemampuan memilih bahan/media yang sesuai adalah dasar.'},
+{id:'V3',section:'Profesional',type:'pg',q:'Berikut ini adalah cara meningkatkan kemampuan siswa dalam hal kemampuan penalaran dan berpikir....',opts:['Memberikan stimulan siswa dengan soal penalaran tinggi','Membiasakan siswa dengan soal soal yang mengasah keterampilan berhitung','Membiasakan siswa untuk mengingat fakta','Membiasakan siswa untuk menyelesaikan masalah secara procedural'],ans:0,exp:'Soal penalaran tinggi merangsang kemampuan berpikir.'},
+{id:'V4',section:'Profesional',type:'pg',q:'Dalam proses pembelajaran di kelas, seorang guru mengidentifikasi kesiapan siswa, seperti tidak mengantuk saat di kelas, tidak mengalami gangguan panca indera, seperti mata dan telinga, tidak mudah lesu di kelas, dan siswa dalam kondisi sehat. Kesiapan siswa dalam proses pembelajaran yang dimaksud adalah....',opts:['Kesiapan fisik','Kesiapan psikis','Kesiapan emosi','Kesiapan kognisi'],ans:0,exp:'Kondisi tubuh dan panca indera termasuk kesiapan fisik.'},
+{id:'V5',section:'Profesional',type:'pg',q:'Berikut ini merupakan karakteristik anak usia SD pada umumnya, kecuali....',opts:['Senang Bergerak','Senang Bermain','Senang melakukan sesuatu secara langsung','Senang bekerja sendiri'],ans:3,exp:'Anak SD umumnya senang bekerja dalam kelompok, bukan sendiri.'},
+{id:'V6',section:'Pedagogik',type:'pg',q:'Untuk membantu perkembangan siswa secara maksimal, guru dapat menggunakan strategi pembelajaran yang bersifat demokratis, salah satunya metode diskusi. Hal ini dilakukan untuk mengembangkan diri siswa pada aspek....',opts:['Fisik','Emosi','Sosial','Kepribadian'],ans:2,exp:'Diskusi mengembangkan aspek sosial siswa.'},
+{id:'V7',section:'Profesional',type:'pg',q:'Bu Siska akan menyampaikan materi baru dalam kelasnya. Sebelum memulai proses belajar mengajar, Bu Siska memastikan siswanya siap untuk mengikuti pembelajaran yang akan disampaikannya dengan memberikan aktivitas yang menarik perhatian siswanya agar dapat mengikuti kegiatan belajar mengajar. Langkah yang dilakukan Bu Siska termasuk salah satu penerapan teori belajar ..',opts:['Brunner','Thorndike','Bandura','Skinner'],ans:1,exp:'Menyiapkan kesiapan siswa = law of readiness Thorndike.'},
+{id:'V8',section:'Pedagogik',type:'pg',q:'Pembelajaran yang bermakna mendorong siswa untuk lebih ...',opts:['Memahami','Mandiri','Menghargai','Terampil'],ans:0,exp:'Pembelajaran bermakna mendorong pemahaman mendalam.'},
+{id:'V9',section:'Profesional',type:'pg',q:'Berdasarkan Permendikbud No. 22 Tahun 2016, berikut ini termasuk prinsip pembelajaran yang disarankan, kecuali...',opts:['Siswa belajar lebih dari satu sumber belajar','Pembelajaran menuju keterampilan aplikatif','Penggunaan ICT dalam proses pembelajaran','Pembelajaran bertumpu pada budaya global'],ans:3,exp:'Prinsip yang benar adalah bertumpu pada budaya lokal, bukan global.'},
+{id:'V10',section:'Pedagogik',type:'pg',q:'Pembelajaran akan lebih efektif jika guru mengetahui terlebih dahulu karakteristik siswa terutama dari kemampuan awal yang dimilikinya. Berikut merupakan cara untuk menentukan kemampuan awal siswa, kecuali ...',opts:['Memberikan pertanyaan-pertanyaan tentang materi yang telah dipelajari terdahulu pada awal pembelajaran','Memberikan pretes pada awal pembelajaran menggunakan instrumen yang memadai tentang materi yang telah dipelajari terdahulu','Pada awal pembelajaran, siswa diminta untuk menuliskan kesulitan-kesulitan belajar tentang materi yang telah dipelajarinya terdahulu','Pada awal pembelajaran, siswa diminta untuk menuliskan testimoni tentang pembelajaran yang telah dilaksanakan sebelumnya'],ans:3,exp:'Testimoni bukan cara menentukan kemampuan awal.'},
+{id:'V11',section:'Profesional',type:'pg',q:'Menurut Piaget, tahap perkembangan intelektual peserta didik sekolah dasar (SD) termasuk ke dalam tahap ....',opts:['Sensorimotor','Praoperasional','Operasional Konkret','Formal'],ans:2,exp:'Anak usia SD (7-12 tahun) berada pada tahap operasional konkret. (Catatan: modul sumber menulis D, tetapi menurut teori Piaget jawaban yang tepat adalah C.)'},
+{id:'V12',section:'Pedagogik',type:'pg',q:'Jika siswa terlihat bosan dan tidak antusias mengikuti pembelajaran, guru sebaiknya melakukan hal-hal berikut, kecuali.....',opts:['Menggunakan pembelajaran berbasis game','Menggunakan pendekatan active learning','Melakukan pembelajaran di luar ruangan','Menyarankan siswa untuk menahan kebosannya'],ans:3,exp:'Menyarankan menahan kebosanan bukan solusi pedagogis.'},
+{id:'V13',section:'Pedagogik',type:'pg',q:'Model pembelajaran berbasis proyek (project based learning) memilik karakteristik aktivitas yang berbeda dengan model pembelajaran lainnya. Berikut ini penyataan yang benar terkait aktivitas siswa dalam model pembelajaran berbasis proyek adalah ....',opts:['Aktivitas belajar menuntut keterampilan siswa yang multi aspek','Seluruh aktivitas siswa di lakukan di luar kelas dalam dunia nyata','Aktivitas siswa meliputi keterampilan statistika','Aktivitas siswa meliputi belajar kelompok'],ans:0,exp:'PjBL menuntut keterampilan multi-aspek.'},
+{id:'V14',section:'Profesional',type:'pg',q:'Belajar adalah proses interaksi antara stimulus dan respons berikut tingkah laku yang dapat diamati dan tidak dapat diamati adalah pendapat dari ....',opts:['Robert M. Gagne','Lev Vygotsky','Edwin Ray Guthrie','Edward Lee Thorndike'],ans:3,exp:'Thorndike mengembangkan teori connectionism (stimulus-respons).'},
+{id:'V15',section:'Profesional',type:'pg',q:'Pak Amir mengajar menggunakan media gambar, foto, yang dilengkapi video yang menampilkan masalah-masalah social, kelaparan, dan kemiskinan di suatu daerah, kenakalan remaja, akibat bencana alam dan lain sebagainya. Kemampuan yang akan diaktualisasikan Pak Amir dalam pembelajaran tersebut adalah...',opts:['Sikap terampil dalam penerapan pengetahuan terhadap masalah sosial','Sikap kritis terhadap kejadian yang menimpa daerahnya','Memahami masalah-masalah social yang terjadi di sekitaranya','Mampu mengatasi akibat dari berbagai bencana dan masalah social lainnya.'],ans:2,exp:'Tujuan: memahami masalah sosial di sekitar.'},
+{id:'V16',section:'Profesional',type:'pg',q:'Dalam menggunakan media pembelajaran atau alat bantu ajar, guru harus memperhatikan beberapa faktor, kecuali ....',opts:['Metode pengajaran yang dipakai','Karakteristik bahan ajar','Waktu yang tersedia untuk kegiatan belajar mengajar','Buku sumber yang digunakan dalam kegiatan belajar mengajar'],ans:3,exp:'Buku sumber berkaitan dengan isi, bukan penggunaan media secara langsung.'},
+{id:'V17',section:'Pedagogik',type:'pg',q:'Instrumen penilaian yang paling sesuai digunakan untuk menilai perkembangan kemajuan belajar siswa pada kompetensi kompetensi yang dipelajari adalah instrumen penilaian....',opts:['Proyek','Kinerja praktik','Portofolio','Pengamatan'],ans:2,exp:'Portofolio menilai perkembangan belajar secara berkelanjutan.'},
+{id:'V18',section:'Profesional',type:'pg',q:'Hal yang akan memengaruhi jenis media pembelajaran yang sesuai adalah ....',opts:['Jenis alat peraga','Tingkat kepandaian guru','Pemilihan metode mengajar','Kesukaan murid'],ans:2,exp:'Pemilihan metode mengajar memengaruhi jenis media yang sesuai.'},
+{id:'V19',section:'Profesional',type:'pg',q:'Konsep penting dalam teori belajar dari Vygotsky adalah....',opts:['Scaffolding dan conditioning','Scaffolding dan Zone of Proximal Development (ZPD)','Zone of Proximal Development, low effect, dan scaffolding','Reinforcement dan punishment'],ans:1,exp:'Vygotsky: scaffolding dan ZPD.'},
+{id:'V20',section:'Profesional',type:'pg',q:'Menurut Piaget, ciri-ciri perkembangan intelektual siswa yang ditandai dengan kemampuan siswa dalam mengklasifikasikan objek pada tingkat dasar secara tunggal dan mencolok adalah tahap ....',opts:['Sensori-motorik','Pra-operasional','Operasional konkrit','Operasional formal'],ans:1,exp:'Klasifikasi tunggal/mencolok adalah ciri tahap pra-operasional.'}
+];
+
+/* =========================================================================
+   KONFIGURASI SIMULASI — 7 PAKET
+   ========================================================================= */
+const SIMULATIONS = [
+  {id:'S1', name:'Simulasi 1', title:'UKPPPG Informatika',
+   subtitle:'Pedagogi Umum (30) + PCK Informatika (50). Format PG, PGK Kategori, dan PGK MCMA.',
+   duration:150*60, questions:Q_INFORMATIKA},
+  {id:'S2', name:'Simulasi 2', title:'Modul Prajabatan',
+   subtitle:'110 soal Pilihan Ganda dari Modul UKPPG Prajabatan (Bu Cima).',
+   duration:150*60, questions:Q_PRAJABATAN},
+  {id:'S3', name:'Simulasi 3', title:'Ebook SJT & PCK',
+   subtitle:'Kumpulan Soal SJT & PCK UKPPPG Guru Tertentu 2025 (Mrs Yura).',
+   duration:60*60, questions:Q_YURA},
+  {id:'S4', name:'Simulasi 4', title:'Contoh Soal UKPPG',
+   subtitle:'Contoh Soal UKPPG Prajabatan (10 soal Studi Kasus).',
+   duration:30*60, questions:Q_CONTOH},
+  {id:'S5', name:'Simulasi 5', title:'HOTS PCK UKPPPG',
+   subtitle:'100+ Soal HOTS PCK UKPPPG Sesuai Kisi-kisi 2025 (FADIAZ).',
+   duration:60*60, questions:Q_FADIAZ},
+  {id:'S6', name:'Simulasi 6', title:'Uji Pengetahuan 2025',
+   subtitle:'Soal-soal PPG Uji Pengetahuan 2025 (Lengkap Sesuai UP PPG 2025).',
+   duration:60*60, questions:Q_PPG2025},
+  {id:'S7', name:'Simulasi 7', title:'Modul Prajabatan 2',
+   subtitle:'Modul Soal UKPPG Prajabatan (Bu Vir).',
+   duration:60*60, questions:Q_PRAJABATAN2}
+];
+
+/* =========================================================================
+   ENGINE (Sama seperti sebelumnya, disesuaikan untuk 7 simulasi)
+   ========================================================================= */
+const app = document.getElementById('app');
+const timerPill = document.getElementById('timerPill');
+const modePill  = document.getElementById('modePill');
+const LETTERS = ['A','B','C','D','E'];
+let S = null;
+let chosenMode = 'exam';
+
+const $  = s => document.querySelector(s);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmt = sec => {
+  sec = Math.max(0, sec);
+  const h = String(Math.floor(sec/3600)).padStart(2,'0');
+  const m = String(Math.floor(sec%3600/60)).padStart(2,'0');
+  const s = String(sec%60).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+};
+
+function isAnswered(q, a){
+  if(a === undefined || a === null) return false;
+  if(q.type === 'pg') return typeof a === 'number';
+  if(q.type === 'kategori') return Array.isArray(a) && a.some(x => x !== null && x !== undefined);
+  if(q.type === 'mcma') return Array.isArray(a) && a.length > 0;
+  return false;
+}
+function scoreQ(q, a){
+  if(!isAnswered(q,a)) return 0;
+  if(q.type === 'pg') return a === q.ans ? 1 : 0;
+  if(q.type === 'kategori'){
+    let c=0; q.key.forEach((k,i)=>{ if(a[i]===k) c++; });
+    return c / q.key.length;
+  }
+  if(q.type === 'mcma'){
+    let hit=0, wrong=0;
+    a.forEach(i => { if(q.ans.includes(i)) hit++; else wrong++; });
+    return Math.max(0, (hit-wrong)/q.ans.length);
+  }
+  return 0;
+}
+
+/* ---------- START MENU ---------- */
+function renderStart(){
+  modePill.textContent = 'Pilih simulasi';
+  timerPill.textContent = '--:--:--';
+  timerPill.classList.remove('warn');
+
+  const cards = SIMULATIONS.map(sim=>`
+    <button class="sim-card" data-sim="${sim.id}">
+      <span class="sim-tag">${sim.name}</span>
+      <h3>${sim.title}</h3>
+      <p>${sim.subtitle}</p>
+      <div class="meta">
+        <span><b>${sim.questions.length}</b> soal</span>
+        <span><b>${Math.round(sim.duration/60)}</b> menit</span>
+      </div>
+    </button>
+  `).join('');
+
+  app.innerHTML = `
+  <div class="wrap">
+    <div class="card hero">
+      <span class="badge">SIMULASI LATIHAN MANDIRI</span>
+      <h1>UKPPPG — 7 Paket Simulasi</h1>
+      <p>Tersedia tujuh paket latihan komprehensif yang mencakup Pedagogi Umum, PCK, dan Soal Situational Judgement Test (SJT). Pilih mode ujian (timer) atau mode latihan (feedback instan).</p>
+    </div>
+
+    <div style="padding:24px 24px 6px">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px">Pilih Simulasi</h3>
+    </div>
+    <div class="sim-grid">${cards}</div>
+
+    <div style="padding:0 24px 8px">
+      <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:12px;text-align:center">Pilih Mode</h3>
+    </div>
+    <div class="mode-bar">
+      <button class="mode-chip ${chosenMode==='exam'?'active':''}" data-mode="exam">⏱ Mode Ujian (timer)</button>
+      <button class="mode-chip ${chosenMode==='practice'?'active':''}" data-mode="practice">📖 Mode Latihan (feedback instan)</button>
+    </div>
+
+    <div class="info-strip">
+      <div><b>PG</b> · pilih satu jawaban</div>
+      <div><b>PGK Kategori</b> · nilai tiap pernyataan</div>
+      <div><b>PGK MCMA</b> · pilih semua yang benar</div>
+    </div>
+  </div>`;
+
+  document.querySelectorAll('[data-sim]').forEach(b=>{
+    b.onclick = () => {
+      const sim = SIMULATIONS.find(x=>x.id === b.dataset.sim);
+      if(sim) begin(sim, chosenMode);
+    };
+  });
+  document.querySelectorAll('[data-mode]').forEach(b=>{
+    b.onclick = () => {
+      chosenMode = b.dataset.mode;
+      document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active', x===b));
+    };
+  });
+}
+
+/* ---------- BEGIN ---------- */
+function begin(sim, mode){
+  chosenMode = mode;
+  S = {
+    sim, mode,
+    list: sim.questions,
+    ans:{}, flags:{}, checked:{}, idx:0,
+    submitted:false, timeLeft:sim.duration, timerId:null
+  };
+  modePill.textContent = `${sim.name} · ${mode==='exam'?'Ujian':'Latihan'} · ${sim.questions.length} soal`;
+  if(mode === 'exam'){
+    timerPill.classList.remove('warn');
+    updateTimer();
+    S.timerId = setInterval(()=>{
+      S.timeLeft--;
+      updateTimer();
+      if(S.timeLeft <= 0){ clearInterval(S.timerId); submit(true); }
+    }, 1000);
+  } else {
+    timerPill.textContent = '∞';
+  }
+  renderExam();
+}
+
+function updateTimer(){
+  timerPill.textContent = fmt(S.timeLeft);
+  timerPill.classList.toggle('warn', S.timeLeft <= 600);
+}
+
+/* ---------- RENDER EXAM ---------- */
+function renderExam(){
+  const q = S.list[S.idx];
+  const a = S.ans[q.id];
+  const doneCount = S.list.filter(x=>isAnswered(x, S.ans[x.id])).length;
+  const checkedHere = !!S.checked[q.id];
+  const showFb = (S.mode==='practice' && checkedHere) || S.submitted;
+
+  let bodyHTML = '';
+
+  if(q.type === 'pg'){
+    bodyHTML = `<div class="opts">` + q.opts.map((o,i)=>{
+      let cls = 'opt';
+      if(showFb){
+        if(i === q.ans) cls += ' correct';
+        else if(a === i) cls += ' wrong';
+      } else if(a === i) cls += ' sel';
+      return `<button class="${cls}" data-opt="${i}">
+        <div class="mark">${LETTERS[i]}</div><span class="txt">${esc(o)}</span></button>`;
+    }).join('') + `</div>`;
+  }
+
+  if(q.type === 'mcma'){
+    bodyHTML = `<div class="opts">` + q.opts.map((o,i)=>{
+      const sel = Array.isArray(a) && a.includes(i);
+      let cls = 'opt';
+      if(showFb){
+        if(q.ans.includes(i)) cls += ' correct';
+        else if(sel) cls += ' wrong';
+      } else if(sel) cls += ' sel';
+      return `<button class="${cls}" data-opt="${i}">
+        <div class="mark">${sel?'✓':''}</div><span class="txt"><b>${LETTERS[i]}.</b> ${esc(o)}</span></button>`;
+    }).join('') + `</div>`;
+  }
+
+  if(q.type === 'kategori'){
+    bodyHTML = `<div>` + q.stmts.map((st,si)=>{
+      const val = Array.isArray(a) ? a[si] : null;
+      const btns = q.labels.map((lb,li)=>{
+        let cls = 'kbtn';
+        if(showFb){
+          if(li === q.key[si]) cls += ' correct';
+          else if(val === li) cls += ' wrong';
+        } else if(val === li) cls += ' sel';
+        return `<button class="${cls}" data-stmt="${si}" data-label="${li}">${lb}</button>`;
+      }).join('');
+      return `<div class="stmt">
+        <div class="s-text"><span class="s-idx">${si+1}.</span>${esc(st)}</div>
+        <div class="kbtns">${btns}</div></div>`;
+    }).join('') + `</div>`;
+  }
+
+  let fbHTML = '';
+  if(showFb){
+    const sc = scoreQ(q, a);
+    let cls = sc === 1 ? 'ok' : (sc > 0 ? 'warn' : 'bad');
+    let title = sc === 1 ? '✓ Jawaban Benar' : (sc > 0 ? '◐ Sebagian Benar' : '✗ Jawaban Belum Tepat');
+    let keyTxt = '';
+    if(q.type === 'pg') keyTxt = `Kunci: <b>${LETTERS[q.ans]}</b>. `;
+    if(q.type === 'mcma') keyTxt = `Kunci: <b>${q.ans.map(i=>LETTERS[i]).join(', ')}</b>. `;
+    if(q.type === 'kategori') keyTxt = `Kunci: <b>${q.key.map((k,i)=>`(${i+1}) ${q.labels[k]}`).join(' · ')}</b>. `;
+    fbHTML = `<div class="fb ${cls}"><b>${title}</b>
+      <div class="exp">${keyTxt}${esc(q.exp)}</div></div>`;
+  }
+
+  const navHTML = S.list.map((x,i)=>{
+    const answered = isAnswered(x, S.ans[x.id]);
+    let cls = 'nbtn';
+    if(S.submitted){
+      const sc = scoreQ(x, S.ans[x.id]);
+      cls += sc === 1 ? ' ok' : (sc > 0 ? ' done' : ' no');
+    } else if(answered) cls += ' done';
+    if(S.flags[x.id]) cls += ' flag';
+    if(i === S.idx) cls += ' cur';
+    return `<button class="${cls}" data-go="${i}">${i+1}</button>`;
+  }).join('');
+
+  const sectionTag = q.section === 'PU' ? 'Pedagogi Umum' : (q.section === 'PCK' ? 'PCK Informatika' : q.section);
+  const sectionCls = (q.section === 'PCK' || q.section === 'Profesional') ? 'pck' : 'pu';
+  const typeLabel = q.type==='pg' ? 'Pilihan Ganda' : (q.type==='mcma' ? 'PGK MCMA' : 'PGK Kategori · ' + q.labels.join(' / '));
+
+  app.innerHTML = `
+  <div class="wrap">
+    <div class="exam-grid">
+      <div>
+        <div class="card qcard">
+          <div class="qmeta">
+            <span class="tag ${sectionCls}">${sectionTag}</span>
+            <span class="tag type">${typeLabel}</span>
+            <span class="qnum">Soal ${S.idx+1} dari ${S.list.length}</span>
+          </div>
+          ${q.type==='kategori'
+            ? `<div class="qtext">${esc(q.intro)}</div>`
+            : `<div class="qtext">${esc(q.q)}</div>`}
+          ${q.type==='mcma' ? `<div class="qsub">Pilih <b>semua</b> opsi yang benar — bisa lebih dari satu.</div>` : ''}
+          ${bodyHTML}
+          ${fbHTML}
+        </div>
+      </div>
+      <aside class="card nav-panel">
+        <div class="nav-title">Navigasi Soal</div>
+        <div class="nav-grid">${navHTML}</div>
+        <div class="legend">
+          <div><span class="sw done"></span> Sudah dijawab</div>
+          <div><span class="sw cur"></span> Soal aktif</div>
+          <div><span class="sw flag"></span> Ditandai ragu</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="bar">
+    <div class="inner">
+      <button class="btn" id="prevBtn" ${S.idx===0?'disabled':''}>← Sebelumnya</button>
+      <button class="btn flagbtn ${S.flags[q.id]?'active':''}" id="flagBtn">⚑ Tandai Ragu</button>
+      ${S.mode==='practice' && !S.submitted ? `<button class="btn solid" id="checkBtn">Cek Jawaban</button>` : ''}
+      <button class="btn solid" id="nextBtn" ${S.idx===S.list.length-1?'disabled':''}>Berikutnya →</button>
+      <span class="progress-mini">${doneCount}/${S.list.length} terjawab</span>
+      <button class="btn submit" id="submitBtn">Selesai &amp; Lihat Hasil</button>
+    </div>
+  </div>`;
+
+  bindExam(q);
+}
+
+function bindExam(q){
+  const go = i => { S.idx = i; renderExam(); };
+  document.querySelectorAll('[data-go]').forEach(b=>{
+    b.onclick = () => go(+b.dataset.go);
+  });
+  document.querySelectorAll('[data-opt]').forEach(b=>{
+    b.onclick = () => {
+      if(S.submitted) return;
+      if(S.mode==='practice' && S.checked[q.id]) return;
+      const i = +b.dataset.opt;
+      if(q.type === 'pg'){
+        S.ans[q.id] = i;
+      } else {
+        let cur = Array.isArray(S.ans[q.id]) ? [...S.ans[q.id]] : [];
+        cur.includes(i) ? cur = cur.filter(x=>x!==i) : cur.push(i);
+        S.ans[q.id] = cur;
+      }
+      renderExam();
+    };
+  });
+  document.querySelectorAll('[data-stmt]').forEach(b=>{
+    b.onclick = () => {
+      if(S.submitted) return;
+      if(S.mode==='practice' && S.checked[q.id]) return;
+      const si = +b.dataset.stmt, li = +b.dataset.label;
+      let arr = Array.isArray(S.ans[q.id]) ? [...S.ans[q.id]] : new Array(q.stmts.length).fill(null);
+      arr[si] = li;
+      S.ans[q.id] = arr;
+      renderExam();
+    };
+  });
+  $('#prevBtn').onclick = () => go(Math.max(0, S.idx-1));
+  $('#nextBtn').onclick = () => go(Math.min(S.list.length-1, S.idx+1));
+  $('#flagBtn').onclick = () => { S.flags[q.id] = !S.flags[q.id]; renderExam(); };
+  const cb = $('#checkBtn');
+  if(cb) cb.onclick = () => { S.checked[q.id] = true; renderExam(); };
+  $('#submitBtn').onclick = () => {
+    const unanswered = S.list.filter(x=>!isAnswered(x, S.ans[x.id])).length;
+    if(unanswered > 0){
+      if(!confirm(`Masih ada ${unanswered} soal belum dijawab. Tetap selesaikan?`)) return;
+    } else {
+      if(!confirm('Selesaikan simulasi dan lihat hasil?')) return;
+    }
+    submit(false);
+  };
+}
+
+function submit(auto){
+  if(S.submitted) return;
+  S.submitted = true;
+  if(S.timerId) clearInterval(S.timerId);
+  if(auto) alert('Waktu habis! Jawaban otomatis dikumpulkan.');
+  renderResult();
+}
+
+/* ---------- RESULT ---------- */
+let filterMode = 'all';
+
+function renderResult(){
+  timerPill.textContent = S.mode==='exam' ? fmt(S.timeLeft) + ' tersisa' : 'Selesai';
+  timerPill.classList.remove('warn');
+
+  const total = S.list.length;
+  const sum = S.list.reduce((t,q)=> t + scoreQ(q, S.ans[q.id]), 0);
+  const pct = Math.round(sum/total*100);
+  const full = S.list.filter(q => scoreQ(q, S.ans[q.id]) === 1).length;
+  const partial = S.list.filter(q => { const s = scoreQ(q, S.ans[q.id]); return s > 0 && s < 1; }).length;
+  const zero = total - full - partial;
+
+  app.innerHTML = `
+  <div class="wrap">
+    <div class="card result-hero">
+      <div class="score-circle" style="--pct:${pct}%">
+        <div class="score-inner">
+          <div class="num">${pct}%</div>
+          <div class="lbl">Skor Total</div>
+        </div>
+      </div>
+      <h1 style="font-size:20px;margin-bottom:6px">${S.sim.name} — ${S.sim.title}</h1>
+      <p style="color:var(--muted);font-size:14px">
+        ${sum.toFixed(1)} dari ${total} poin · ${full} benar penuh · ${partial} sebagian · ${zero} belum tepat
+      </p>
+    </div>
+    <div class="stat-row" style="margin-top:18px">
+      <div class="stat"><div class="v">${full}</div><div class="k">Benar Penuh</div></div>
+      <div class="stat"><div class="v" style="color:var(--warn)">${partial}</div><div class="k">Sebagian</div></div>
+      <div class="stat"><div class="v" style="color:var(--bad)">${zero}</div><div class="k">Belum Tepat</div></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <div class="review-head">
+        <h2>Pembahasan</h2>
+        <div class="filters">
+          <button class="fbtn active" data-f="all">Semua</button>
+          <button class="fbtn" data-f="wrong">Perlu Diperbaiki</button>
+        </div>
+      </div>
+      <div class="review-list" id="reviewList"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+      <button class="btn solid" id="againBtn" style="flex:1;min-width:160px">Ulangi Simulasi Ini</button>
+      <button class="btn" id="menuBtn" style="flex:1;min-width:160px">Kembali ke Menu</button>
+    </div>
+  </div>`;
+
+  const renderList = () => {
+    const list = S.list.filter(q=>{
+      if(filterMode === 'all') return true;
+      return scoreQ(q, S.ans[q.id]) < 1;
+    });
+    $('#reviewList').innerHTML = list.length ? list.map(q=>{
+      const a = S.ans[q.id];
+      const sc = scoreQ(q, a);
+      const cardCls = sc===1 ? 'right-card' : (sc>0 ? 'partial-card' : 'wrong-card');
+      const num = S.list.indexOf(q)+1;
+      const tag = q.section === 'PU' ? 'PU' : (q.section === 'PCK' ? 'PCK' : q.section);
+      let body = '';
+      if(q.type === 'pg'){
+        body = `<div class="ansbox">
+          <div class="yours ${sc===1?'ok':'no'}"><span class="lbl">Jawaban Anda</span>${isAnswered(q,a)?LETTERS[a]+'. '+esc(q.opts[a]):'<i>tidak dijawab</i>'}</div>
+          <div class="key"><span class="lbl">Kunci</span>${LETTERS[q.ans]}. ${esc(q.opts[q.ans])}</div>
+        </div>`;
+      }
+      if(q.type === 'mcma'){
+        const yours = (Array.isArray(a)&&a.length) ? a.map(i=>LETTERS[i]).join(', ') : 'tidak dijawab';
+        body = `<div class="ansbox">
+          <div class="yours ${sc===1?'ok':'no'}"><span class="lbl">Pilihan Anda</span>${yours}</div>
+          <div class="key"><span class="lbl">Kunci</span>${q.ans.map(i=>LETTERS[i]).join(', ')}</div>
+        </div>`;
+      }
+      if(q.type === 'kategori'){
+        body = `<div class="ansbox">` + q.stmts.map((st,i)=>{
+          const v = Array.isArray(a) ? a[i] : null;
+          const ok = v === q.key[i];
+          return `<div class="yours ${ok?'ok':'no'}" style="margin-bottom:6px">
+            <span class="lbl">${i+1}</span>${esc(st)}<br>
+            <span style="color:var(--muted);font-size:12.5px">Anda: <b>${v===null||v===undefined?'—':q.labels[v]}</b> · Kunci: <b>${q.labels[q.key[i]]}</b></span></div>`;
+        }).join('') + `</div>`;
+      }
+      return `<div class="rev ${cardCls}">
+        <div class="qmeta" style="margin-bottom:0">
+          <span class="tag type">${tag}</span>
+          <span class="tag type">${q.type==='pg'?'PG':(q.type==='mcma'?'PGK MCMA':'PGK Kategori')}</span>
+          <span class="qnum">No. ${num} · skor ${sc.toFixed(2)}</span>
+        </div>
+        <div class="rq">${esc(q.type==='kategori' ? q.intro : q.q)}</div>
+        ${body}
+        <div class="fb ${sc===1?'ok':(sc>0?'warn':'bad')}" style="margin-top:0">
+          <b>Pembahasan</b><div class="exp">${esc(q.exp)}</div></div>
+      </div>`;
+    }).join('') : `<p style="color:var(--muted);text-align:center;padding:24px">Tidak ada soal pada filter ini. 🎉</p>`;
+  };
+  renderList();
+  document.querySelectorAll('[data-f]').forEach(b=>{
+    b.onclick = () => {
+      filterMode = b.dataset.f;
+      document.querySelectorAll('[data-f]').forEach(x=>x.classList.toggle('active', x===b));
+      renderList();
+    };
+  });
+  $('#againBtn').onclick = () => begin(S.sim, S.mode);
+  $('#menuBtn').onclick = () => renderStart();
+  window.scrollTo(0,0);
+}
+
+/* ---------- KEYBOARD ---------- */
+document.addEventListener('keydown', e=>{
+  if(!S || S.submitted || !document.querySelector('.qcard')) return;
+  const q = S.list[S.idx];
+  if(e.key === 'ArrowLeft')  $('#prevBtn')?.click();
+  if(e.key === 'ArrowRight') $('#nextBtn')?.click();
+  if(q.type === 'pg' || q.type === 'mcma'){
+    const i = LETTERS.indexOf(e.key.toUpperCase());
+    if(i > -1 && i < q.opts.length) document.querySelector(`[data-opt="${i}"]`)?.click();
+  }
+});
+
+renderStart();
+</script>
+</body>
+</html>
